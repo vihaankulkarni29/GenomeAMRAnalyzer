@@ -10,7 +10,22 @@ A comprehensive, enterprise-ready bioinformatics pipeline for analyzing antimicr
 
 ## 🚀 Quick Start
 
-### Zero-Setup Command (Recommended)
+### 🎯 **For Non-Technical Users (Investigators, Clinicians)**
+```bash
+# Windows: Double-click quick_start.bat
+# Mac/Linux: ./quick_start.sh
+# OR copy-paste this command:
+
+python genomeamr_auto.py \
+  --url "https://www.ncbi.nlm.nih.gov/nuccore/(Escherichia%20coli%20AND%20erythromycin%20resistance)" \
+  --genes config/genes_erythromycin.txt \
+  --email your.name@institution.edu
+```
+✅ **Zero setup required** - just provide email + research focus  
+✅ **Works on any computer** - Windows, Mac, Linux  
+✅ **Automatic everything** - downloads tools, databases, genomes  
+
+### 🔧 **For Technical Users**
 ```bash
 # Just provide URL + genes + email - everything else is automatic!
 python genomeamr_auto.py \
