@@ -1,0 +1,3 @@
+ORF_ID	Contig	Start	Stop	Orientation	Cut_Off	Pass_Bitscore	Best_Hit_ARO	Best_Hit_ARO_Name	ARO_Name	Model_type	SNPs_in_Best_Hit_ARO	Other_SNPs	Drug_Class	Resistance_Mechanism	AMR_Gene_Family
+GCF_000005825.2_genome_1	GCF_000005825.2_genome	1000	2000	+	Perfect	500.0	ARO:3000001	ermA	ermA	protein homolog model			fluoroquinolone antibiotic	efflux pump complex or subunit conferring antibiotic resistance	resistance-nodulation-cell division (RND) antibiotic efflux pump
+GCF_000005825.2_genome_2	GCF_000005825.2_genome	2500	3500	+	Perfect	500.0	ARO:3000002	ermB	ermB	protein homolog model			fluoroquinolone antibiotic	efflux pump complex or subunit conferring antibiotic resistance	resistance-nodulation-cell division (RND) antibiotic efflux pump

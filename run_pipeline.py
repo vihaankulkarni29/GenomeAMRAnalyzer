@@ -54,17 +54,37 @@ def check_external_tools(config: dict) -> None:
         if not which("rgi"):
             issues.append("RGI not found in PATH (fallback_simulation=false)")
     
-    # Check EMBOSS water for alignment
-    alignment_config = config.get("tools", {}).get("alignment", {})
-    if alignment_config.get("algorithm", "water").lower() == "water":
-        if not which("water"):
-            issues.append("EMBOSS water not found in PATH (try: conda install -c bioconda emboss)")
+    # Note: EMBOSS is now handled internally, no external dependency needed
     
     if issues:
         print("\n[PREFLIGHT] External tool warnings:")
         for issue in issues:
             print(f"  - {issue}")
         print("Pipeline will use fallback/simulation modes where possible.\n")
+
+
+def auto_install_tools() -> bool:
+    """Automatically install required tools."""
+    try:
+        from src.utils.auto_installer import AutoInstaller
+        
+        print("[AUTO-INSTALL] Installing required tools automatically...")
+        installer = AutoInstaller()
+        results = installer.ensure_tools_installed()
+        
+        if results.get("rgi", False):
+            print("[AUTO-INSTALL] ✓ RGI installation successful")
+            return True
+        else:
+            print("[AUTO-INSTALL] ⚠ RGI installation failed, will use fallback mode")
+            return False
+            
+    except ImportError as e:
+        print(f"[AUTO-INSTALL] Auto-installer not available: {e}")
+        return False
+    except Exception as e:
+        print(f"[AUTO-INSTALL] Installation failed: {e}")
+        return False
 
 
 def resolve_accessions_from_url(url: str, email: str, api_key: Optional[str], max_genomes: int) -> List[str]:
@@ -94,8 +114,13 @@ def main() -> int:
     input_group.add_argument("--url", help="NCBI nuccore URL to resolve to accessions")
     input_group.add_argument("--accessions-file", help="Text file with accessions (one per line)")
     
-    # Gene targets
+    # Gene targets and email
     parser.add_argument("--genes-file", help="Text file with target genes (one per line)")
+    parser.add_argument("--email", help="NCBI email (overrides config setting)")
+    
+    # Tool management
+    parser.add_argument("--auto-install", action="store_true", help="Automatically install missing tools")
+    parser.add_argument("--no-auto-install", action="store_true", help="Skip automatic tool installation")
     
     # Pipeline control
     parser.add_argument("--skip-download", action="store_true", help="Skip genome download step")
@@ -118,6 +143,12 @@ def main() -> int:
         
     with config_path.open("r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
+
+    # Auto-install tools if requested (default behavior unless disabled)
+    if not args.no_auto_install:
+        if args.auto_install or not which("rgi"):
+            print("[INFO] Checking tool installation...")
+            auto_install_tools()
 
     # Check external tools
     check_external_tools(cfg)
@@ -153,12 +184,13 @@ def main() -> int:
     if args.url:
         # Resolve URL to accessions
         ncbi_cfg = cfg.get("ncbi", {})
-        email = ncbi_cfg.get("email", "")
+        email = args.email or ncbi_cfg.get("email", "")
         api_key = ncbi_cfg.get("api_key") or None
         max_genomes = ncbi_cfg.get("max_genomes", 50)
         
         if not email or email.startswith("your.email"):
-            print("Error: Set ncbi.email in config before using --url")
+            print("Error: Provide --email or set ncbi.email in config before using --url")
+            print("Example: --email your.name@institution.edu")
             return 1
         
         try:
@@ -191,6 +223,9 @@ def main() -> int:
             print(f"[INFO] Using default accessions file: {accessions_file}")
         else:
             print("Error: Provide --url or --accessions-file")
+            print("Examples:")
+            print("  --url 'https://www.ncbi.nlm.nih.gov/nuccore/(Escherichia%20coli)'")
+            print("  --accessions-file my_genomes.txt")
             return 1
 
     # 1) Download genomes (from resolved accessions)

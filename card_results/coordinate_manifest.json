@@ -1,6 +1,6 @@
 {
   "manifest_version": "1.0",
-  "generated_timestamp": "2025-09-17 12:02:01",
+  "generated_timestamp": "2025-09-17 12:22:46",
   "target_genes": [
     "ermA",
     "ermB",
@@ -19,10 +19,58 @@
     "acrB",
     "tolC"
   ],
-  "total_processed_accessions": 3,
-  "successful_accessions": 3,
+  "total_processed_accessions": 6,
+  "successful_accessions": 6,
   "failed_accessions": 0,
   "accessions": {
+    "APQ19878.1_genome": {
+      "coordinate_file": "C:\\Users\\Vihaan\\Documents\\GenomeAMRAnalyzer\\card_results\\coordinates\\APQ19878.1_genome_coordinates.csv",
+      "target_genes_found": 2,
+      "genes": [
+        {
+          "gene_name": "ermA",
+          "contig_id": "APQ19878.1_genome",
+          "start": 1000,
+          "end": 2000,
+          "strand": "+",
+          "cut_off": "Perfect",
+          "analysis_timestamp": "2025-09-17 12:22:46"
+        },
+        {
+          "gene_name": "ermB",
+          "contig_id": "APQ19878.1_genome",
+          "start": 2500,
+          "end": 3500,
+          "strand": "+",
+          "cut_off": "Perfect",
+          "analysis_timestamp": "2025-09-17 12:22:46"
+        }
+      ]
+    },
+    "GCF_000005825.2": {
+      "coordinate_file": "C:\\Users\\Vihaan\\Documents\\GenomeAMRAnalyzer\\card_results\\coordinates\\GCF_000005825.2_coordinates.csv",
+      "target_genes_found": 2,
+      "genes": [
+        {
+          "gene_name": "ermA",
+          "contig_id": "GCF_000005825.2_genome",
+          "start": 1000,
+          "end": 2000,
+          "strand": "+",
+          "cut_off": "Perfect",
+          "analysis_timestamp": "2025-09-17 12:22:46"
+        },
+        {
+          "gene_name": "ermB",
+          "contig_id": "GCF_000005825.2_genome",
+          "start": 2500,
+          "end": 3500,
+          "strand": "+",
+          "cut_off": "Perfect",
+          "analysis_timestamp": "2025-09-17 12:22:46"
+        }
+      ]
+    },
     "AQU94137.1_genome": {
       "coordinate_file": "C:\\Users\\Vihaan\\Documents\\GenomeAMRAnalyzer\\card_results\\coordinates\\AQU94137.1_genome_coordinates.csv",
       "target_genes_found": 2,
@@ -34,7 +82,7 @@
           "end": 2000,
           "strand": "+",
           "cut_off": "Perfect",
-          "analysis_timestamp": "2025-09-17 12:02:01"
+          "analysis_timestamp": "2025-09-17 12:22:46"
         },
         {
           "gene_name": "ermB",
@@ -43,7 +91,7 @@
           "end": 3500,
           "strand": "+",
           "cut_off": "Perfect",
-          "analysis_timestamp": "2025-09-17 12:02:01"
+          "analysis_timestamp": "2025-09-17 12:22:46"
         }
       ]
     },
@@ -58,7 +106,7 @@
           "end": 2000,
           "strand": "+",
           "cut_off": "Perfect",
-          "analysis_timestamp": "2025-09-17 12:02:01"
+          "analysis_timestamp": "2025-09-17 12:22:46"
         },
         {
           "gene_name": "ermB",
@@ -67,31 +115,55 @@
           "end": 3500,
           "strand": "+",
           "cut_off": "Perfect",
-          "analysis_timestamp": "2025-09-17 12:02:01"
+          "analysis_timestamp": "2025-09-17 12:22:46"
         }
       ]
     },
-    "APQ19878.1_genome": {
-      "coordinate_file": "C:\\Users\\Vihaan\\Documents\\GenomeAMRAnalyzer\\card_results\\coordinates\\APQ19878.1_genome_coordinates.csv",
+    "GCF_000008865.2": {
+      "coordinate_file": "C:\\Users\\Vihaan\\Documents\\GenomeAMRAnalyzer\\card_results\\coordinates\\GCF_000008865.2_coordinates.csv",
       "target_genes_found": 2,
       "genes": [
         {
           "gene_name": "ermA",
-          "contig_id": "APQ19878.1_genome",
+          "contig_id": "GCF_000008865.2_genome",
           "start": 1000,
           "end": 2000,
           "strand": "+",
           "cut_off": "Perfect",
-          "analysis_timestamp": "2025-09-17 12:02:01"
+          "analysis_timestamp": "2025-09-17 12:22:46"
         },
         {
           "gene_name": "ermB",
-          "contig_id": "APQ19878.1_genome",
+          "contig_id": "GCF_000008865.2_genome",
           "start": 2500,
           "end": 3500,
           "strand": "+",
           "cut_off": "Perfect",
-          "analysis_timestamp": "2025-09-17 12:02:01"
+          "analysis_timestamp": "2025-09-17 12:22:46"
+        }
+      ]
+    },
+    "GCF_000006945.2": {
+      "coordinate_file": "C:\\Users\\Vihaan\\Documents\\GenomeAMRAnalyzer\\card_results\\coordinates\\GCF_000006945.2_coordinates.csv",
+      "target_genes_found": 2,
+      "genes": [
+        {
+          "gene_name": "ermA",
+          "contig_id": "GCF_000006945.2_genome",
+          "start": 1000,
+          "end": 2000,
+          "strand": "+",
+          "cut_off": "Perfect",
+          "analysis_timestamp": "2025-09-17 12:22:46"
+        },
+        {
+          "gene_name": "ermB",
+          "contig_id": "GCF_000006945.2_genome",
+          "start": 2500,
+          "end": 3500,
+          "strand": "+",
+          "cut_off": "Perfect",
+          "analysis_timestamp": "2025-09-17 12:22:46"
         }
       ]
     }

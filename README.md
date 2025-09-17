@@ -10,62 +10,108 @@ A comprehensive, enterprise-ready bioinformatics pipeline for analyzing antimicr
 
 ## 🚀 Quick Start
 
-### One-Command Installation & Test
+### Zero-Setup Command (Recommended)
 ```bash
-# Install (choose one option)
-pip install genomeamranalyzer              # From PyPI (recommended)
-# OR
-git clone https://github.com/yourusername/GenomeAMRAnalyzer.git
-cd GenomeAMRAnalyzer && pip install -e .
-
-# Test in 30 seconds
-python genomeamr.py --quick-test
-```
-
-### Your First Analysis
-```bash
-# Analyze specific genomes
-python genomeamr.py --accessions GCF_000005825.2,GCF_000006945.2
+# Just provide URL + genes + email - everything else is automatic!
+python genomeamr_auto.py \
+  --url "https://www.ncbi.nlm.nih.gov/nuccore/(Escherichia%20coli%20AND%20erythromycin%20resistance)" \
+  --genes config/genes_erythromycin.txt \
+  --email your.name@institution.edu
 
 # Or use your own genome list
-echo "GCF_000005825.2" > my_genomes.txt
-python run_pipeline.py --config config/snakemake_config.yaml
+python genomeamr_auto.py \
+  --accessions my_genomes.txt \
+  --genes config/genes_default.txt \
+  --email your.name@institution.edu
+```
+✅ **Automatically installs RGI + CARD database**  
+✅ **No external dependencies required**  
+✅ **Works on Windows, Mac, Linux**
+
+### Traditional Installation (Optional)
+```bash
+# Install package
+pip install -r requirements.txt
+
+# Run pipeline manually  
+python run_pipeline.py --url "NCBI_URL" --genes config/genes_default.txt --email your@email.com
 ```
 
-### View Results
-Results automatically open in your browser, or check: `reports/pipeline_report.html`
+## 📖 Usage Examples
+
+### For Beginners
+```bash
+# Download + analyze E. coli genomes for erythromycin resistance
+python genomeamr_auto.py \
+  --url "https://www.ncbi.nlm.nih.gov/nuccore/(Escherichia%20coli%20AND%20erythromycin%20resistance)" \
+  --genes config/genes_erythromycin.txt \
+  --email researcher@university.edu
+```
+
+### For Researchers  
+```bash
+# Use your own accession list
+python genomeamr_auto.py \
+  --accessions my_study_genomes.txt \
+  --genes custom_resistance_genes.txt \
+  --email lab@institution.edu \
+  --output-dir my_analysis_results
+```
+
+### For Advanced Users
+```bash
+# Manual control with tool management
+python run_pipeline.py \
+  --url "NCBI_URL" \
+  --genes config/genes_default.txt \
+  --email user@domain.com \
+  --auto-install        # Auto-install RGI + CARD
+  --output-dir results  # Custom output location
+```
+
+### All Options
+```bash
+python genomeamr_auto.py --help
+# Shows: --url, --accessions, --genes, --email, --output-dir, --skip-install
+```
 
 ## 🎯 For Different Users
 
 ### 🔬 **Researchers & Scientists**
 ```bash
-# From NCBI URL + custom genes
-python run_pipeline.py --config config/snakemake_config.yaml \
+# Zero-setup analysis from NCBI URL
+python genomeamr_auto.py \
   --url "https://www.ncbi.nlm.nih.gov/nuccore/(Escherichia%20coli%20AND%20erythromycin%20resistance)" \
-  --genes-file config/genes_erythromycin.txt
+  --genes config/genes_erythromycin.txt \
+  --email researcher@university.edu
 
-# From accession list + default genes  
-python run_pipeline.py --config config/snakemake_config.yaml \
-  --accessions-file my_accessions.txt
+# From your own accession list
+python genomeamr_auto.py \
+  --accessions my_study_genomes.txt \
+  --genes custom_resistance_genes.txt \
+  --email lab@institution.edu
 # → Comprehensive reports with statistics and visualizations
 ```
 
 ### 🎓 **Students & Educators**  
 ```bash
-# Educational mode with explanations
-python genomeamr.py --tutorial --explain-steps
-# → Step-by-step learning experience
-
-# Quick analysis with pre-defined gene sets
-python run_pipeline.py --config config/snakemake_config.yaml \
-  --accessions-file examples/test_accessions.txt \
-  --genes-file config/genes_default.txt
+# Quick educational analysis
+python genomeamr_auto.py \
+  --accessions examples/test_accessions.txt \
+  --genes config/genes_default.txt \
+  --email student@university.edu
+# → Step-by-step learning experience with automatic setup
 ```
 
 ### 🏥 **Clinical Labs**
 ```bash
-# Beta-lactam resistance screening
-python run_pipeline.py --config config/snakemake_config.yaml \
+# Beta-lactam resistance screening (example)
+python genomeamr_auto.py \
+  --accessions clinical_isolates.txt \
+  --genes config/genes_betalactam.txt \
+  --email lab@hospital.org
+# → Clinical-grade analysis with zero manual setup
+```
   --url "https://www.ncbi.nlm.nih.gov/nuccore/(clinical%20isolates%20AND%20ESBL)" \
   --genes-file config/genes_betalactam.txt
 
