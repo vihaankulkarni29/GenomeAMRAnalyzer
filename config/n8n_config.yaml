@@ -1,0 +1,92 @@
+# n8n Configuration for GenomeAMRAnalyzer
+# Configure webhook URLs, database settings, and notification preferences
+
+# n8n Webhook URLs (update with your n8n instance)
+webhook_urls:
+  analysis_complete: "http://localhost:5678/webhook/amr-analysis-complete"
+  high_priority_alert: "http://localhost:5678/webhook/amr-high-priority"  
+  quality_check: "http://localhost:5678/webhook/amr-quality-check"
+  batch_processing: "http://localhost:5678/webhook/amr-batch-process"
+
+# Database Integration Settings
+database:
+  enabled: true
+  store_results: true
+  store_metadata: true
+  store_files: false  # Set to true to store actual files in database
+  retention_days: 365  # How long to keep results
+  
+  # Database connection (configure for your setup)
+  connection:
+    type: "postgresql"  # postgresql, mysql, mongodb
+    host: "localhost"
+    port: 5432
+    database: "amr_results"
+    username: "amr_user"
+    password: "secure_password"
+
+# Notification Settings  
+notifications:
+  email_enabled: true
+  slack_enabled: false
+  teams_enabled: false
+  
+  # Alert thresholds
+  high_priority_threshold: 5  # Number of high-priority findings to trigger alert
+  quality_threshold: 0.8      # Minimum quality score before alert
+  
+  # Email settings
+  email:
+    smtp_server: "smtp.gmail.com"
+    smtp_port: 587
+    username: "your-email@gmail.com"
+    password: "app-password"
+    from_address: "genomeamr@institution.edu"
+    
+  # Slack settings (if enabled)
+  slack:
+    webhook_url: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+    channel: "#amr-surveillance"
+    
+# Workflow Automation Settings
+automation:
+  auto_archive: true           # Automatically archive results to cloud
+  auto_backup: true           # Backup results to secondary storage
+  auto_reporting: true        # Generate summary reports
+  auto_quality_check: true    # Run quality validation workflows
+  
+  # Cloud storage settings
+  cloud_storage:
+    provider: "aws_s3"  # aws_s3, google_cloud, azure_blob
+    bucket: "amr-analysis-results"
+    region: "us-east-1"
+    
+# Advanced Settings
+advanced:
+  batch_processing: true      # Enable batch analysis workflows
+  real_time_monitoring: true # Monitor analysis progress in real-time
+  api_integration: true      # Enable REST API for external integrations
+  workflow_versioning: true  # Track workflow versions and changes
+  
+  # Performance settings
+  parallel_workflows: 3      # Number of parallel n8n workflows
+  timeout_minutes: 60       # Workflow timeout
+  retry_attempts: 3         # Number of retries for failed workflows
+  
+# Security Settings
+security:
+  webhook_authentication: true
+  api_key_required: true
+  encrypt_sensitive_data: true
+  audit_logging: true
+  
+  # API keys (generate secure keys)
+  api_keys:
+    primary: "your-secure-api-key-here"
+    secondary: "backup-api-key-here"
+
+# Development/Testing Settings
+development:
+  mock_mode: false          # Use mock webhooks for testing
+  debug_logging: true       # Enhanced logging for development
+  test_webhooks: true       # Test webhook connectivity on startup

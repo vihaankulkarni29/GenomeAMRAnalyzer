@@ -411,10 +411,59 @@ def main() -> int:
         print("HTML Report generation failed; aborting.")
         return rc
 
-    print("\nPipeline completed successfully. All steps finished.")
-    return 0
+    # === n8n WORKFLOW INTEGRATION ===
+    try:
+        from src.utils.n8n_integration import integrate_with_pipeline
+        
+            # Count genomes from accessions file
+            genome_count = 0
+            if accessions_file and accessions_file.exists():
+                with open(accessions_file, 'r') as f:
+                    genome_count = sum(1 for line in f if line.strip())
+        
+            # Get user email
+            user_email = args.email or cfg.get("ncbi", {}).get("email", "unknown@example.com")
+        
+            # Collect pipeline results for n8n workflows
+            pipeline_results = {
+                'analysis_id': f"analysis_{int(time.time())}",
+                'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
+                'user_email': user_email,
+                'genome_count': genome_count,
+                'resistance_gene_count': len(target_genes),
+                'high_priority_count': 0,  # TODO: Calculate from results
+                'quality_score': 0.95,  # TODO: Calculate actual quality metrics
+                'processing_time': 0,  # TODO: Track actual processing time
+                'html_report_path': str(basic_report),
+                'csv_summary_path': '',  # TODO: Add CSV output path
+                'json_results_path': '',  # TODO: Add JSON results path
+                'cooccurrence_path': '',  # TODO: Add cooccurrence results path
+                'analysis_parameters': {
+                    'genes_file': str(args.genes) if args.genes else '',
+                    'genome_source': args.url if args.url else str(args.accessions_file) if args.accessions_file else '',
+                    'auto_install_used': getattr(args, 'auto_install', False)
+                }
+            }
+        
+        # Trigger n8n workflows
+        print("\n🔄 Triggering n8n automation workflows...")
+        n8n_results = integrate_with_pipeline(pipeline_results)
+        
+        if n8n_results['analysis_complete']:
+            print("✅ Results stored in database successfully")
+        if n8n_results['high_priority_alert']:
+            print("🚨 High-priority alert sent (if applicable)")
+        if n8n_results['errors']:
+            print(f"⚠️ n8n integration warnings: {'; '.join(n8n_results['errors'])}")
+        
+        print("🎯 n8n workflow automation completed")
+        
+    except ImportError:
+        print("ℹ️ n8n integration not available (optional feature)")
+    except Exception as e:
+        print(f"⚠️ n8n integration failed (analysis results still saved): {e}")
 
-    print("\nPipeline completed successfully.")
+    print("\nPipeline completed successfully. All steps finished.")
     return 0
 
 
