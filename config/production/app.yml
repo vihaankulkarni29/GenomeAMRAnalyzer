@@ -1,0 +1,79 @@
+# Production Configuration for ProductionWildTypeAligner
+# Environment: Production
+# Security Level: High
+# Performance Profile: Optimized
+
+# Application Configuration
+application:
+  name: "ProductionWildTypeAligner"
+  version: "2.0"
+  environment: "production"
+  debug: false
+  max_concurrent_jobs: 4
+  
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "structured"
+  output: "file"
+  file_path: "/app/logs/wildtype_alignment.log"
+  max_file_size_mb: 100
+  backup_count: 5
+  enable_console: false
+  structured_logging: true
+  
+# Performance Configuration
+performance:
+  memory_limit_gb: 8
+  cpu_cores: 4
+  io_threads: 2
+  cache_size_mb: 512
+  batch_size: 100
+  timeout_seconds: 3600
+  
+# Alignment Configuration
+alignment:
+  default_algorithm: "emboss_water"
+  fallback_algorithm: "biopython_pairwise"
+  quality_threshold: 50.0
+  coverage_threshold: 70.0
+  max_alignment_length: 10000
+  
+# SEPI Configuration
+sepi:
+  max_retries: 3
+  timeout_seconds: 300
+  cache_enabled: true
+  cache_ttl_hours: 24
+  batch_size: 50
+  
+# Storage Configuration
+storage:
+  data_dir: "/app/data"
+  results_dir: "/app/results"
+  cache_dir: "/app/cache"
+  logs_dir: "/app/logs"
+  temp_dir: "/tmp"
+  cleanup_temp_files: true
+  
+# Security Configuration
+security:
+  enable_input_validation: true
+  max_file_size_mb: 500
+  allowed_file_extensions: [".fasta", ".fa", ".fas", ".faa"]
+  sanitize_filenames: true
+  
+# Monitoring Configuration
+monitoring:
+  enable_metrics: true
+  metrics_port: 9090
+  health_check_interval: 30
+  enable_profiling: false
+  
+# Quality Assurance
+quality:
+  enable_validation: true
+  validation_level: "strict"
+  generate_reports: true
+  statistical_validation: true
+  outlier_detection: true

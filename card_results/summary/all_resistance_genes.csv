@@ -1,0 +1,7 @@
+genome_id,gene_name,contig_id,start,end,strand,cut_off,bitscore,aro_id,drug_class,resistance_mechanism
+APQ19878.1_genome,acrA,APQ19878.1_genome,1000,2000,+,Perfect,500.0,ARO:3000001,fluoroquinolone antibiotic,efflux pump complex or subunit conferring antibiotic resistance
+APQ19878.1_genome,acrB,APQ19878.1_genome,2500,3500,+,Perfect,500.0,ARO:3000002,fluoroquinolone antibiotic,efflux pump complex or subunit conferring antibiotic resistance
+AQU94137.1_genome,acrA,AQU94137.1_genome,1000,2000,+,Perfect,500.0,ARO:3000001,fluoroquinolone antibiotic,efflux pump complex or subunit conferring antibiotic resistance
+AQU94137.1_genome,acrB,AQU94137.1_genome,2500,3500,+,Perfect,500.0,ARO:3000002,fluoroquinolone antibiotic,efflux pump complex or subunit conferring antibiotic resistance
+KWV17775.1_genome,acrA,KWV17775.1_genome,1000,2000,+,Perfect,500.0,ARO:3000001,fluoroquinolone antibiotic,efflux pump complex or subunit conferring antibiotic resistance
+KWV17775.1_genome,acrB,KWV17775.1_genome,2500,3500,+,Perfect,500.0,ARO:3000002,fluoroquinolone antibiotic,efflux pump complex or subunit conferring antibiotic resistance

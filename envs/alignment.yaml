@@ -1,0 +1,11 @@
+name: alignment_env
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - muscle=5.1
+  - mafft=7.505
+  - clustalw=2.1
+  - biopython=1.81

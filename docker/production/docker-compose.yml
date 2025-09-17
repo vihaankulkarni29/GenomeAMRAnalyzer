@@ -1,0 +1,126 @@
+# Production Docker Compose for ProductionWildTypeAligner
+# Includes service orchestration, networking, and volume management
+
+version: '3.8'
+
+services:
+  # Main ProductionWildTypeAligner service
+  wildtype-aligner:
+    build:
+      context: ../..
+      dockerfile: docker/production/Dockerfile
+    image: genome-amr-analyzer/wildtype-aligner:production
+    container_name: wildtype-aligner-prod
+    restart: unless-stopped
+    
+    # Environment variables
+    environment:
+      - ALIGNER_LOG_LEVEL=INFO
+      - ALIGNER_MAX_CONCURRENT=4
+      - ALIGNER_OUTPUT_DIR=/app/results
+      - PYTHONPATH=/app/src:/app
+      - ENVIRONMENT=production
+    
+    # Volume mounts
+    volumes:
+      - ./data:/app/data:rw
+      - ./results:/app/results:rw
+      - ./logs:/app/logs:rw
+      - ./cache:/app/cache:rw
+      - ./config/production:/app/config/production:ro
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
+        reservations:
+          cpus: '2.0'
+          memory: 4G
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "from src.production_wildtype_aligner import ProductionWildTypeAligner; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Networking
+    networks:
+      - aligner-network
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # Redis for caching and job queues (future scalability)
+  redis:
+    image: redis:7-alpine
+    container_name: wildtype-aligner-redis
+    restart: unless-stopped
+    
+    # Redis configuration
+    command: redis-server --appendonly yes --maxmemory 1gb --maxmemory-policy allkeys-lru
+    
+    volumes:
+      - redis-data:/data
+    
+    networks:
+      - aligner-network
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL for metadata storage (future enhancement)
+  postgres:
+    image: postgres:15-alpine
+    container_name: wildtype-aligner-postgres
+    restart: unless-stopped
+    
+    environment:
+      POSTGRES_DB: wildtype_aligner
+      POSTGRES_USER: aligner_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_in_production}
+    
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    
+    networks:
+      - aligner-network
+    
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aligner_user -d wildtype_aligner"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# Networks
+networks:
+  aligner-network:
+    driver: bridge
+    name: wildtype-aligner-network
+
+# Persistent volumes
+volumes:
+  redis-data:
+    driver: local
+    name: wildtype-aligner-redis-data
+  
+  postgres-data:
+    driver: local
+    name: wildtype-aligner-postgres-data
+
+# Example usage:
+# docker-compose -f docker/production/docker-compose.yml up -d
+# docker-compose -f docker/production/docker-compose.yml logs -f wildtype-aligner
+# docker-compose -f docker/production/docker-compose.yml down

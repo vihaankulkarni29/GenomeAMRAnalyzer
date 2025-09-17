@@ -1,0 +1,19 @@
+# Base Requirements for ProductionWildTypeAligner
+# Shared across all environments
+
+# Core Python packages
+biopython>=1.84
+pandas>=2.2.0
+numpy>=1.26.0
+pyyaml>=6.0.0
+
+# Async and networking
+aiohttp>=3.9.0
+aiofiles>=23.2.0
+
+# Configuration and validation
+pydantic>=2.8.0
+python-dotenv>=1.0.0
+
+# Logging
+structlog>=24.2.0

@@ -1,0 +1,18 @@
+Co-occurrence Analysis Summary
+========================================
+
+Analysis Date: 2025-09-15T11:06:11.212309
+Total Mutations: 8
+Total Genomes: 4
+Total Genes: 3
+Genes Analyzed: acrA, acrB, mdtF
+Patterns Found: 5
+Significant Patterns: 0
+
+Top 10 Co-occurrence Patterns:
+----------------------------------------
+ 1. acrA: 3/4 (75.0%)
+ 2. mdtF: 3/4 (75.0%)
+ 3. acrB: 2/4 (50.0%)
+ 4. acrA + acrB: 2/4 (50.0%)
+ 5. acrA + mdtF: 2/4 (50.0%)

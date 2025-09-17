@@ -1,0 +1,157 @@
+# AcrA/AcrB Mutation Analysis Configuration
+# Configuration file for the AcrAB_Mutation_Workflow.py script
+
+# Target proteins for analysis
+target_proteins:
+  - "acrA"
+  - "acrB"
+
+# Reference sequences
+reference_dir: "references"
+acra_reference: "references/acrA_MG1655.fasta"
+acrb_reference: "references/acrB_MG1655.fasta"
+
+# Analysis parameters
+analysis:
+  # Alignment parameters
+  gap_open_penalty: -10.0
+  gap_extend_penalty: -0.5
+  match_score: 2
+  mismatch_score: -1
+  alignment_mode: "global"
+
+  # Quality filters
+  min_sequence_identity: 30.0  # Minimum sequence identity for valid alignments
+  min_alignment_score: 50.0    # Minimum alignment score
+  max_gap_percentage: 20.0     # Maximum allowed gaps in alignment
+
+  # Mutation analysis
+  min_mutation_frequency: 1    # Minimum frequency for hotspot detection
+  hotspot_threshold: 3         # Mutations per position to be considered hotspot
+
+# Research questions configuration
+research_questions:
+  # Question 1: Mutation quantification
+  quantification:
+    analyze_mutation_types: true
+    analyze_mutation_frequencies: true
+    analyze_protein_coverage: true
+
+  # Question 2: Co-occurrence analysis
+  co_occurrence:
+    analyze_linked_mutations: true
+    analyze_operon_patterns: true
+    min_co_occurrence_threshold: 2
+
+  # Question 3: Prevalence analysis
+  prevalence:
+    analyze_geographic_distribution: true
+    analyze_temporal_patterns: true
+    analyze_clinical_associations: true
+
+# Output configuration
+output:
+  # Directory structure
+  create_subdirectories: true
+  compress_intermediate_files: false
+
+  # File naming
+  timestamp_outputs: true
+  include_analysis_id: true
+
+  # Report generation
+  generate_html_report: true
+  generate_summary_json: true
+  generate_research_summary: true
+
+# Genome data sources
+genome_sources:
+  # Local genome directory
+  local_dir: "data/genomes"
+
+  # NCBI download parameters
+  ncbi_download:
+    enabled: false
+    email: "vihaankulkarni29@gmail.com"
+    api_key: "ef7622c2e716fa317fe04d24c42904211107"
+    batch_size: 10
+    max_genomes: 100
+
+  # Test data (for development)
+  test_data:
+    enabled: true
+    test_genome_dir: "test_data"
+
+# Quality control
+quality_control:
+  # Validation checks
+  validate_references: true
+  validate_genome_files: true
+  check_sequence_integrity: true
+
+  # Error handling
+  continue_on_error: true
+  max_errors_per_step: 5
+  retry_failed_steps: true
+
+# Logging configuration
+logging:
+  level: "INFO"
+  file: "logs/acra_acrb_workflow.log"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  include_timestamps: true
+
+# Performance optimization
+performance:
+  # Parallel processing
+  parallel_processing: false
+  max_workers: 4
+
+  # Memory management
+  batch_processing: true
+  batch_size: 50
+
+  # Caching
+  cache_intermediate_results: true
+  cache_dir: ".cache"
+
+# Integration with existing pipeline
+integration:
+  # Use existing tools
+  use_genome_protein_extractor: true
+  use_wild_type_aligner: true
+  use_sub_scan: true
+  use_html_report_generator: true
+
+  # Compatibility settings
+  maintain_backward_compatibility: true
+  export_to_standard_format: true
+
+# Advanced analysis options
+advanced:
+  # Machine learning integration
+  enable_ml_analysis: false
+  ml_model_path: "models/acra_acrb_predictor.pkl"
+
+  # Statistical analysis
+  perform_statistical_tests: true
+  confidence_level: 0.95
+
+  # Network analysis
+  analyze_mutation_networks: false
+  network_min_connections: 3
+
+# Metadata enhancement
+metadata:
+  # Automatic metadata detection
+  auto_detect_organism: true
+  auto_detect_strain: true
+  auto_detect_source: true
+
+  # Clinical data integration
+  include_clinical_data: false
+  clinical_data_file: "data/clinical_metadata.csv"
+
+  # Geographic data
+  include_geographic_data: false
+  geographic_data_file: "data/geographic_metadata.csv"

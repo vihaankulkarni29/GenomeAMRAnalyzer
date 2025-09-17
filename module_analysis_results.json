@@ -1,0 +1,194 @@
+{
+  "timestamp": "2025-09-16T18:24:34.796057",
+  "modules": {
+    "production_wildtype_aligner": {
+      "module_name": "production_wildtype_aligner",
+      "import_status": "SUCCESS",
+      "primary_class_available": true,
+      "classes": [
+        "AlignmentEngine",
+        "AlignmentQualityMetrics",
+        "AlignmentResult",
+        "Any",
+        "PairwiseAligner",
+        "Path",
+        "ProductionWildTypeAligner",
+        "QualityAssessment",
+        "ReferenceSequence",
+        "SEPIReferenceManager",
+        "Seq",
+        "SeqRecord",
+        "defaultdict"
+      ],
+      "functions": [
+        "Dict",
+        "List",
+        "Optional",
+        "Set",
+        "Tuple",
+        "asdict",
+        "dataclass",
+        "main"
+      ],
+      "production_ready": true,
+      "issues": [],
+      "recommendations": [],
+      "has_expected_methods": true
+    },
+    "fasta_aa_extractor_integration": {
+      "module_name": "fasta_aa_extractor_integration",
+      "import_status": "SUCCESS",
+      "primary_class_available": true,
+      "classes": [
+        "ExtractionResult",
+        "FastaAAExtractorIntegrator",
+        "GeneCoordinate",
+        "Path",
+        "Seq",
+        "SeqRecord",
+        "datetime",
+        "defaultdict"
+      ],
+      "functions": [
+        "Dict",
+        "List",
+        "Optional",
+        "Set",
+        "Tuple",
+        "Union",
+        "dataclass",
+        "field",
+        "main"
+      ],
+      "production_ready": true,
+      "issues": [],
+      "recommendations": [],
+      "has_expected_methods": true
+    },
+    "generic_cooccurrence_analyzer": {
+      "module_name": "generic_cooccurrence_analyzer",
+      "import_status": "SUCCESS",
+      "primary_class_available": true,
+      "classes": [
+        "Any",
+        "CoOccurrencePattern",
+        "Counter",
+        "DataProcessingError",
+        "GenericCoOccurrenceAnalyzer",
+        "MutationEvent",
+        "Path",
+        "ValidationError",
+        "combinations",
+        "datetime",
+        "defaultdict",
+        "product"
+      ],
+      "functions": [
+        "Dict",
+        "Iterable",
+        "List",
+        "Optional",
+        "Set",
+        "Tuple",
+        "Union",
+        "dataclass",
+        "field",
+        "hypergeom",
+        "main"
+      ],
+      "production_ready": true,
+      "issues": [],
+      "recommendations": [],
+      "has_expected_methods": true
+    },
+    "simple_genome_downloader": {
+      "module_name": "simple_genome_downloader",
+      "import_status": "SUCCESS",
+      "primary_class_available": true,
+      "classes": [
+        "GenomeDownloaderConfig",
+        "Path",
+        "SimpleGenomeDownloader"
+      ],
+      "functions": [
+        "Dict",
+        "List",
+        "Optional",
+        "dataclass",
+        "main",
+        "urlencode"
+      ],
+      "production_ready": true,
+      "issues": [],
+      "recommendations": [],
+      "has_expected_methods": true
+    },
+    "simplified_wildtype_aligner": {
+      "module_name": "simplified_wildtype_aligner",
+      "import_status": "SUCCESS",
+      "primary_class_available": true,
+      "classes": [
+        "AlignmentResult",
+        "Counter",
+        "DataProcessingError",
+        "FileSystemError",
+        "Path",
+        "Seq",
+        "SeqRecord",
+        "SimpleAlignerConfig",
+        "SimplifiedWildTypeAligner",
+        "ValidationError"
+      ],
+      "functions": [
+        "Dict",
+        "List",
+        "Optional",
+        "Tuple",
+        "dataclass",
+        "main"
+      ],
+      "production_ready": true,
+      "issues": [],
+      "recommendations": [],
+      "has_expected_methods": true
+    },
+    "card_runner": {
+      "module_name": "card_runner",
+      "import_status": "SUCCESS",
+      "primary_class_available": true,
+      "classes": [
+        "CARDRunner",
+        "Path",
+        "RGIConfig",
+        "ResistanceGene"
+      ],
+      "functions": [
+        "Dict",
+        "List",
+        "Optional",
+        "Set",
+        "dataclass",
+        "main"
+      ],
+      "production_ready": true,
+      "issues": [],
+      "recommendations": [],
+      "has_expected_methods": true
+    }
+  },
+  "summary": {
+    "total_modules": 6,
+    "production_ready": 6,
+    "needs_fixes": 0,
+    "integration_ready": 1
+  },
+  "integration_assessment": {
+    "pipeline_flow_supported": true,
+    "data_format_compatibility": "COMPATIBLE",
+    "workflow_ready": true,
+    "missing_components": [],
+    "integration_recommendations": [
+      "All core modules are production ready - proceed with Snakemake integration"
+    ]
+  }
+}

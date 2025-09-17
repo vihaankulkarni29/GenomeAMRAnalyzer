@@ -1,0 +1,61 @@
+# Production Pipeline Configuration Template
+# Advanced configuration for large-scale genome processing (100-1000 genomes)
+
+# NCBI API Configuration
+ncbi:
+  email: "your.email@institution.edu"  # REQUIRED: Your email for NCBI API
+  api_key: "your_ncbi_api_key_here"    # RECOMMENDED: Get from NCBI account
+  retmax: 1000                         # Maximum genomes to discover
+  retry_attempts: 3                    # Retry failed downloads
+  timeout_seconds: 300                 # Download timeout per genome
+
+# Parallel Processing Configuration
+performance:
+  max_concurrent_downloads: 20         # Concurrent genome downloads (increase for faster networks)
+  rgi_threads: 8                       # RGI analysis threads (match CPU cores)
+  chunk_size: 100                      # Process genomes in chunks (for very large batches)
+  memory_limit_gb: 16                  # Memory limit for processing
+
+# Output Structure Configuration
+output:
+  base_directory: "/path/to/pipeline/output"
+  naming_convention: "accession_based"  # accession_based | organism_based
+  compression: true                     # Compress large output files
+  cleanup_temp: true                   # Clean temporary files after processing
+
+# Quality Control Configuration
+quality:
+  min_genome_size: 100000              # Minimum genome size in bp
+  max_genome_size: 20000000            # Maximum genome size in bp
+  require_complete_genomes: false      # Only process complete genomes
+  min_rgi_bitscore: 50.0              # Minimum RGI bitscore for gene calls
+  
+# Target Gene Configuration
+genes:
+  # Efflux pump genes (example)
+  target_genes:
+    - "mexA"
+    - "mexB" 
+    - "mexC"
+    - "mexD"
+    - "mexE"
+    - "mexF"
+    - "oprM"
+    - "oprN"
+  
+  # Gene name variants to match
+  allow_variants: true                 # Match gene name variants (mexA, MexA, MEXA)
+  
+# Logging Configuration
+logging:
+  level: "INFO"                        # DEBUG | INFO | WARNING | ERROR
+  detailed_extraction_logs: true       # Log each protein extraction
+  performance_tracking: true          # Track processing times and rates
+
+# Advanced Features
+advanced:
+  checksum_validation: true           # Validate file checksums
+  provenance_tracking: true           # Full provenance metadata
+  manifest_generation: true           # Generate comprehensive manifests
+  integrity_checking: true            # Cross-validate pipeline stages
+  backup_critical_files: false        # Backup critical intermediate files

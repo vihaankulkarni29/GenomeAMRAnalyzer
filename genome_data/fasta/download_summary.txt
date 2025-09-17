@@ -1,0 +1,7 @@
+Genome Download Summary
+==============================
+Total accessions: 3
+Genomes downloaded: 3
+FASTA files created: 3
+Failed downloads: 0
+Success rate: 100.0%

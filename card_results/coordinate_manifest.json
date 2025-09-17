@@ -1,0 +1,86 @@
+{
+  "manifest_version": "1.0",
+  "generated_timestamp": "2025-09-17 08:04:08",
+  "target_genes": [
+    "acrA",
+    "acrB",
+    "tolC"
+  ],
+  "total_processed_accessions": 3,
+  "successful_accessions": 3,
+  "failed_accessions": 0,
+  "accessions": {
+    "APQ19878.1_genome": {
+      "coordinate_file": "C:\\Users\\Vihaan\\Documents\\GenomeAMRAnalyzer\\card_results\\coordinates\\APQ19878.1_genome_coordinates.csv",
+      "target_genes_found": 2,
+      "genes": [
+        {
+          "gene_name": "acrA",
+          "contig_id": "APQ19878.1_genome",
+          "start": 1000,
+          "end": 2000,
+          "strand": "+",
+          "cut_off": "Perfect",
+          "analysis_timestamp": "2025-09-17 08:04:08"
+        },
+        {
+          "gene_name": "acrB",
+          "contig_id": "APQ19878.1_genome",
+          "start": 2500,
+          "end": 3500,
+          "strand": "+",
+          "cut_off": "Perfect",
+          "analysis_timestamp": "2025-09-17 08:04:08"
+        }
+      ]
+    },
+    "AQU94137.1_genome": {
+      "coordinate_file": "C:\\Users\\Vihaan\\Documents\\GenomeAMRAnalyzer\\card_results\\coordinates\\AQU94137.1_genome_coordinates.csv",
+      "target_genes_found": 2,
+      "genes": [
+        {
+          "gene_name": "acrA",
+          "contig_id": "AQU94137.1_genome",
+          "start": 1000,
+          "end": 2000,
+          "strand": "+",
+          "cut_off": "Perfect",
+          "analysis_timestamp": "2025-09-17 08:04:08"
+        },
+        {
+          "gene_name": "acrB",
+          "contig_id": "AQU94137.1_genome",
+          "start": 2500,
+          "end": 3500,
+          "strand": "+",
+          "cut_off": "Perfect",
+          "analysis_timestamp": "2025-09-17 08:04:08"
+        }
+      ]
+    },
+    "KWV17775.1_genome": {
+      "coordinate_file": "C:\\Users\\Vihaan\\Documents\\GenomeAMRAnalyzer\\card_results\\coordinates\\KWV17775.1_genome_coordinates.csv",
+      "target_genes_found": 2,
+      "genes": [
+        {
+          "gene_name": "acrA",
+          "contig_id": "KWV17775.1_genome",
+          "start": 1000,
+          "end": 2000,
+          "strand": "+",
+          "cut_off": "Perfect",
+          "analysis_timestamp": "2025-09-17 08:04:08"
+        },
+        {
+          "gene_name": "acrB",
+          "contig_id": "KWV17775.1_genome",
+          "start": 2500,
+          "end": 3500,
+          "strand": "+",
+          "cut_off": "Perfect",
+          "analysis_timestamp": "2025-09-17 08:04:08"
+        }
+      ]
+    }
+  }
+}

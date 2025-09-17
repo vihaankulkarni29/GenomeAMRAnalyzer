@@ -1,0 +1,42 @@
+# Production Requirements for ProductionWildTypeAligner
+# Pinned versions for production stability
+# Generated: September 16, 2025
+
+# Core Python packages
+biopython==1.84
+pandas==2.2.2
+numpy==1.26.4
+pyyaml==6.0.1
+
+# Async and networking
+aiohttp==3.9.5
+aiofiles==23.2.1
+asyncio-throttle==1.0.2
+
+# Configuration and validation
+pydantic==2.8.2
+python-dotenv==1.0.1
+marshmallow==3.21.3
+
+# Logging and monitoring
+structlog==24.2.0
+prometheus-client==0.20.0
+sentry-sdk==2.8.0
+
+# Testing (for production validation)
+pytest==8.3.2
+pytest-asyncio==0.23.8
+pytest-cov==5.0.0
+
+# Security
+cryptography==42.0.8
+bcrypt==4.2.0
+
+# Optional bioinformatics tools
+# EMBOSS suite would be installed via system package manager
+# conda install -c bioconda emboss
+
+# Development tools (comment out in pure production)
+black==24.4.2
+isort==5.13.2
+mypy==1.11.1

@@ -1,0 +1,11 @@
+name: python_base_env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - requests=2.31.0
+  - pandas=2.0.3
+  - numpy=1.24.3
+  - pyyaml=6.0
+  - sqlite=3.42.0

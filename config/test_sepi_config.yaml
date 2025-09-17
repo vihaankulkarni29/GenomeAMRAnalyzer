@@ -1,0 +1,213 @@
+environment:
+  cache_directory: C:\Users\Vihaan\Documents\GenomeAMRAnalyzer\.sepi_cache
+  cache_retention_days: 60
+  concurrent_downloads: 5
+  max_cache_size_mb: 2000
+  retry_attempts: 3
+  sepi_script_path: C:\Users\Vihaan\Documents\GenomeAMRAnalyzer\MetaDataHarvester\sepi2.0\sepi.py
+  temp_directory: C:\Users\Vihaan\Documents\GenomeAMRAnalyzer\temp\sepi
+  timeout_seconds: 600
+generated_timestamp: '2025-09-16T13:40:50.726232'
+genes:
+  acrA:
+    alternative_names:
+    - acra
+    - AcrA
+    - membrane fusion protein AcrA
+    gene_name: acrA
+    max_sequence_length: 450
+    min_sequence_length: 300
+    organism_preferences:
+    - Escherichia coli K-12 MG1655
+    - Escherichia coli
+    - Escherichia
+    quality_threshold: 0.95
+    required_annotations:
+    - membrane fusion protein
+    - efflux
+    - AcrA
+  acrB:
+    alternative_names:
+    - acrb
+    - AcrB
+    - multidrug efflux pump AcrB
+    gene_name: acrB
+    max_sequence_length: 1200
+    min_sequence_length: 1000
+    organism_preferences:
+    - Escherichia coli K-12 MG1655
+    - Escherichia coli
+    - Escherichia
+    quality_threshold: 0.95
+    required_annotations:
+    - multidrug efflux
+    - RND
+    - AcrB
+  acrR:
+    alternative_names:
+    - acrr
+    - AcrR
+    - AcrAB operon repressor
+    gene_name: acrR
+    max_sequence_length: 250
+    min_sequence_length: 150
+    organism_preferences:
+    - Escherichia coli K-12 MG1655
+    - Escherichia coli
+    quality_threshold: 0.9
+    required_annotations:
+    - repressor
+    - transcriptional regulator
+    - AcrR
+  marA:
+    alternative_names:
+    - mara
+    - MarA
+    - multiple antibiotic resistance protein MarA
+    gene_name: marA
+    max_sequence_length: 180
+    min_sequence_length: 120
+    organism_preferences:
+    - Escherichia coli K-12 MG1655
+    - Escherichia coli
+    quality_threshold: 0.9
+    required_annotations:
+    - transcriptional activator
+    - mar
+    - MarA
+  mexA:
+    alternative_names:
+    - mexa
+    - MexA
+    - membrane fusion protein MexA
+    gene_name: mexA
+    max_sequence_length: 450
+    min_sequence_length: 350
+    organism_preferences:
+    - Pseudomonas aeruginosa PAO1
+    - Pseudomonas aeruginosa
+    - Pseudomonas
+    quality_threshold: 0.95
+    required_annotations:
+    - membrane fusion protein
+    - efflux
+    - MexA
+  mexB:
+    alternative_names:
+    - mexb
+    - MexB
+    - multidrug efflux pump MexB
+    gene_name: mexB
+    max_sequence_length: 1200
+    min_sequence_length: 1000
+    organism_preferences:
+    - Pseudomonas aeruginosa PAO1
+    - Pseudomonas aeruginosa
+    - Pseudomonas
+    quality_threshold: 0.95
+    required_annotations:
+    - multidrug efflux
+    - RND
+    - MexB
+  oprM:
+    alternative_names:
+    - oprm
+    - OprM
+    - outer membrane protein OprM
+    gene_name: oprM
+    max_sequence_length: 550
+    min_sequence_length: 450
+    organism_preferences:
+    - Pseudomonas aeruginosa PAO1
+    - Pseudomonas aeruginosa
+    - Pseudomonas
+    quality_threshold: 0.95
+    required_annotations:
+    - outer membrane
+    - efflux
+    - OprM
+  tolC:
+    alternative_names:
+    - tolc
+    - TolC
+    - outer membrane channel TolC
+    gene_name: tolC
+    max_sequence_length: 500
+    min_sequence_length: 400
+    organism_preferences:
+    - Escherichia coli K-12 MG1655
+    - Escherichia coli
+    - Escherichia
+    quality_threshold: 0.95
+    required_annotations:
+    - outer membrane
+    - channel
+    - TolC
+ncbi_access:
+  api_key: ef7622c2e716fa317fe04d24c42904211107
+  batch_size: 100
+  email: vihaankulkarni29@gmail.com
+  entrez_email: vihaankulkarni29@gmail.com
+  entrez_tool: GenomeAMRAnalyzer-SEPI2.0
+  max_requests_per_second: 3.0
+organisms:
+  acinetobacter_baumannii:
+    assembly_level: complete_genome
+    exclude_strains: []
+    max_assemblies: 5
+    organism_name: Acinetobacter baumannii
+    quality_filters:
+      max_genome_size: 4500000
+      min_genome_size: 3500000
+    strain_preferences:
+    - ATCC 17978
+    - AYE
+  escherichia_coli:
+    assembly_level: complete_genome
+    exclude_strains:
+    - O157:H7
+    - STEC
+    max_assemblies: 3
+    organism_name: Escherichia coli
+    quality_filters:
+      max_genome_size: 6000000
+      min_genome_size: 4000000
+      min_n50: 1000000
+    strain_preferences:
+    - K-12 MG1655
+    - K-12
+    - MG1655
+    - str. K-12
+  klebsiella_pneumoniae:
+    assembly_level: complete_genome
+    exclude_strains: []
+    max_assemblies: 5
+    organism_name: Klebsiella pneumoniae
+    quality_filters:
+      max_genome_size: 6500000
+      min_genome_size: 5000000
+    strain_preferences:
+    - ATCC 700721
+    - MGH 78578
+  pseudomonas_aeruginosa:
+    assembly_level: complete_genome
+    exclude_strains: []
+    max_assemblies: 3
+    organism_name: Pseudomonas aeruginosa
+    quality_filters:
+      max_genome_size: 7500000
+      min_genome_size: 5500000
+      min_n50: 2000000
+    strain_preferences:
+    - PAO1
+    - PA14
+    - LESB58
+quality_control:
+  checksum_validation: true
+  exclude_partial_sequences: true
+  max_sequence_length: 10000
+  min_assembly_quality: complete_genome
+  min_sequence_length: 30
+  require_annotation: true
+  validate_protein_sequence: true
+sepi_configuration_version: '2.0'

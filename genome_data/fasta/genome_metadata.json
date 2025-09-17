@@ -1,0 +1,29 @@
+[
+  {
+    "protein_accession": "APQ19878.1",
+    "genome_accession": "GCA_APQ19878.1_genome",
+    "organism": "Mock_organism_for_APQ19878.1",
+    "assembly_level": "Complete Genome",
+    "genome_size": "5000000",
+    "fasta_file": "C:\\Users\\Vihaan\\Documents\\GenomeAMRAnalyzer\\genome_data\\fasta\\fasta\\APQ19878.1_genome.fasta",
+    "date": "2025-09-17"
+  },
+  {
+    "protein_accession": "AQU94137.1",
+    "genome_accession": "GCA_AQU94137.1_genome",
+    "organism": "Mock_organism_for_AQU94137.1",
+    "assembly_level": "Complete Genome",
+    "genome_size": "5000000",
+    "fasta_file": "C:\\Users\\Vihaan\\Documents\\GenomeAMRAnalyzer\\genome_data\\fasta\\fasta\\AQU94137.1_genome.fasta",
+    "date": "2025-09-17"
+  },
+  {
+    "protein_accession": "KWV17775.1",
+    "genome_accession": "GCA_KWV17775.1_genome",
+    "organism": "Mock_organism_for_KWV17775.1",
+    "assembly_level": "Complete Genome",
+    "genome_size": "5000000",
+    "fasta_file": "C:\\Users\\Vihaan\\Documents\\GenomeAMRAnalyzer\\genome_data\\fasta\\fasta\\KWV17775.1_genome.fasta",
+    "date": "2025-09-17"
+  }
+]

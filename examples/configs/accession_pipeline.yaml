@@ -1,0 +1,33 @@
+# Example pipeline config using explicit accessions and gene list files
+run_id: example-accession-run
+
+logging:
+  log_dir: logs
+
+database:
+  path: priority3.db
+
+input:
+  # Provide a text file of assembly accessions (GCF_/GCA_) one per line
+  accessions_file: test_pipeline\assembly_accessions.txt
+  # Provide a gene list file (one gene name per line)
+  gene_list_file: test_pipeline\genes.txt
+  # Optional fallback query if no accessions provided
+  genome_query: Escherichia coli[Organism]
+  max_genomes: 10
+
+ncbi:
+  # REQUIRED by your note: user email used for NCBI E-utilities
+  email: user@example.com
+  # Optional API key for higher rate limits
+  api_key: null
+  mock_mode: false
+
+# Stages outputs
+genome_output_dir: genomes
+card_output_dir: card_results
+extractor_output_dir: extracted_proteins
+alignment_output_dir: alignments
+reference_dir: reference_proteins
+subscan_output_dir: subscan_results
+cooccurrence_output_dir: cooccurrence_results

@@ -1,0 +1,13 @@
+genes,genome_id,pattern_frequency,pattern_percentage,genome_count,is_significant
+acrA,GCF_000005825.2,0.75,75.0,3,False
+acrA,GCF_000007123.1,0.75,75.0,3,False
+acrA,GCF_000008456.1,0.75,75.0,3,False
+mdtF,GCF_000005825.2,0.75,75.0,3,False
+mdtF,GCF_000006945.2,0.75,75.0,3,False
+mdtF,GCF_000008456.1,0.75,75.0,3,False
+acrB,GCF_000007123.1,0.5,50.0,2,False
+acrB,GCF_000008456.1,0.5,50.0,2,False
+acrA+acrB,GCF_000007123.1,0.5,50.0,2,False
+acrA+acrB,GCF_000008456.1,0.5,50.0,2,False
+acrA+mdtF,GCF_000005825.2,0.5,50.0,2,False
+acrA+mdtF,GCF_000008456.1,0.5,50.0,2,False

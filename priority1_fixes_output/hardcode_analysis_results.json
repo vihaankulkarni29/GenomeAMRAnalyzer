@@ -1,0 +1,18 @@
+{
+  "total_files_scanned": 119,
+  "files_with_hardcodes": 60,
+  "total_hardcode_occurrences": 1084,
+  "patterns_searched": [
+    "acrA",
+    "acrB",
+    "tolC",
+    "MG1655",
+    "E.coli"
+  ],
+  "recommendations": [
+    "Replace gene name references with config_manager.get_default_genes()",
+    "Replace strain references with config_manager.get_reference_strain()",
+    "Implement configuration-based gene selection",
+    "Create automated replacement scripts"
+  ]
+}

@@ -1,0 +1,244 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AMR Genomics Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        h1, h2 { color: #2c3e50; }
+        .artifact-link { font-size: 0.9em; color: #2980b9; text-decoration: none; }
+        .artifact-link:hover { text-decoration: underline; }
+        .section { margin-bottom: 2em; }
+        .table-responsive { overflow-x: auto; }
+        @media (max-width: 768px) {
+            body { margin: 1em; }
+            table { font-size: 0.9em; }
+        }
+    </style>
+</head>
+<body>
+    <h1>AMR Genomics Analysis Report</h1>
+    <p>Run ID: realworld_run_1</p>
+    <div class="section">
+        <h2>Genome Summary</h2>
+        <div class="table-responsive">
+        <table id="genomeTable" class="display">
+            <thead>
+                <tr>
+                    <th>Accession</th>
+                    <th>Organism</th>
+                    <th>Strain</th>
+                    <th>BioSample</th>
+                    <th>BioProject</th>
+                    <th>Download Date</th>
+                    <th>Artifact</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>56673308</td>
+                    <td>Mannheimia haemolytica (g-proteobacteria)</td>
+                    <td></td>
+                    <td>SAMN40460777</td>
+                    <td>PRJNA1088094</td>
+                    <td>None</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>76683118</td>
+                    <td>Escherichia coli (E. coli)</td>
+                    <td></td>
+                    <td>SAMN48111087</td>
+                    <td>PRJNA1254407</td>
+                    <td>None</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>76683258</td>
+                    <td>Escherichia coli (E. coli)</td>
+                    <td></td>
+                    <td>SAMN48111086</td>
+                    <td>PRJNA1254407</td>
+                    <td>None</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>76683798</td>
+                    <td>Escherichia coli (E. coli)</td>
+                    <td></td>
+                    <td>SAMN48111085</td>
+                    <td>PRJNA1254407</td>
+                    <td>None</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>76753118</td>
+                    <td>Escherichia coli (E. coli)</td>
+                    <td></td>
+                    <td>SAMN42032709</td>
+                    <td>PRJNA1129026</td>
+                    <td>None</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>77258988</td>
+                    <td>Escherichia coli (E. coli)</td>
+                    <td></td>
+                    <td>SAMN50266478</td>
+                    <td>PRJNA1298331</td>
+                    <td>None</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>76778028</td>
+                    <td>Escherichia coli (E. coli)</td>
+                    <td></td>
+                    <td>SAMN41579907</td>
+                    <td>PRJNA1117783</td>
+                    <td>None</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>77262068</td>
+                    <td>Escherichia coli (E. coli)</td>
+                    <td></td>
+                    <td>SAMN41036405</td>
+                    <td>PRJNA1102395</td>
+                    <td>None</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>77315918</td>
+                    <td>Escherichia coli (E. coli)</td>
+                    <td></td>
+                    <td>SAMN17101260</td>
+                    <td>PRJNA685925</td>
+                    <td>None</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>77444178</td>
+                    <td>Escherichia coli (E. coli)</td>
+                    <td></td>
+                    <td>SAMN44668295</td>
+                    <td>PRJNA1184340</td>
+                    <td>None</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>77493548</td>
+                    <td>Escherichia coli (E. coli)</td>
+                    <td></td>
+                    <td>SAMN48946895</td>
+                    <td>PRJNA1265403</td>
+                    <td>None</td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Mutations</h2>
+        <div class="table-responsive">
+        <table id="mutationTable" class="display">
+            <thead>
+                <tr>
+                    <th>Mutation ID</th>
+                    <th>Accession</th>
+                    <th>Gene</th>
+                    <th>Type</th>
+                    <th>Position</th>
+                    <th>Ref Base</th>
+                    <th>Mut Base</th>
+                    <th>Confidence</th>
+                    <th>AMR Known</th>
+                    <th>Artifact</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        </div>
+    </div>
+    <div class="section">
+        <h2>MIC Data</h2>
+        <div class="table-responsive">
+        <table id="micTable" class="display">
+            <thead>
+                <tr>
+                    <th>Accession</th>
+                    <th>Antibiotic</th>
+                    <th>MIC Value</th>
+                    <th>Unit</th>
+                    <th>Resistance</th>
+                    <th>Quality</th>
+                    <th>Artifact</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Mutation Co-occurrence</h2>
+        <div class="table-responsive">
+        <table id="cooccurrenceTable" class="display">
+            <thead>
+                <tr>
+                    <th>Mutation A</th>
+                    <th>Mutation B</th>
+                    <th>Count A</th>
+                    <th>Count B</th>
+                    <th>Count Both</th>
+                    <th>P-value</th>
+                    <th>Odds Ratio</th>
+                    <th>Significant</th>
+                    <th>Artifact</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Pipeline Statistics</h2>
+        <pre>{
+  "artifacts": {},
+  "genome_status": {
+    "downloaded": 11
+  },
+  "genomes_with_mic": 0,
+  "total_genomes": 11
+}</pre>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#genomeTable').DataTable({
+                "pageLength": 25,
+                "responsive": true
+            });
+            $('#mutationTable').DataTable({
+                "pageLength": 25,
+                "responsive": true
+            });
+            $('#micTable').DataTable({
+                "pageLength": 25,
+                "responsive": true
+            });
+            $('#cooccurrenceTable').DataTable({
+                "pageLength": 25,
+                "responsive": true
+            });
+        });
+    </script>
+</body>
+</html>

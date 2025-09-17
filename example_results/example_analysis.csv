@@ -1,0 +1,6 @@
+genes,mutation_type,genome_count,total_genomes,frequency,percentage,genomes,p_value,is_significant,expected_frequency,enrichment_score
+['acrA'],['acrA_mutated'],3,4,0.75,75.0,"['GCF_000005825.2', 'GCF_000007123.1', 'GCF_000008456.1']",,,,
+['mdtF'],['mdtF_mutated'],3,4,0.75,75.0,"['GCF_000005825.2', 'GCF_000006945.2', 'GCF_000008456.1']",,,,
+['acrB'],['acrB_mutated'],2,4,0.5,50.0,"['GCF_000007123.1', 'GCF_000008456.1']",,,,
+"['acrA', 'acrB']","['acrA_mutated', 'acrB_mutated']",2,4,0.5,50.0,"['GCF_000007123.1', 'GCF_000008456.1']",,False,0.375,1.3333333333333333
+"['acrA', 'mdtF']","['acrA_mutated', 'mdtF_mutated']",2,4,0.5,50.0,"['GCF_000005825.2', 'GCF_000008456.1']",,False,0.5625,0.8888888888888888

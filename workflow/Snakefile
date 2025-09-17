@@ -1,0 +1,48 @@
+# Production Master Pipeline Orchestrator (Snakemake)
+# Enterprise-grade workflow for GenomeAMRAnalyzer
+
+configfile: "config/snakemake_config.yaml"
+
+rule all:
+    input:
+        expand("results/{{sample}}_final_report.json", sample=config["samples"])
+
+rule genome_download:
+    output:
+        "genomes/{sample}.fasta"
+    params:
+        url=lambda wildcards: config["genome_urls"][wildcards.sample]
+    shell:
+        "python src/simple_genome_downloader.py --url {params.url} --output {output}"
+
+rule alignment:
+    input:
+        genome="genomes/{sample}.fasta"
+    output:
+        "alignments/{sample}_aligned.water"
+    shell:
+        "python src/simplified_wildtype_aligner.py --input {input.genome} --output {output}"
+
+rule mutation_calling:
+    input:
+        alignment="alignments/{sample}_aligned.water"
+    output:
+        "mutations/mutation_calls/{sample}_mutations.csv"
+    shell:
+        "python src/production_subscan_analyzer.py --config config/snakemake_config.yaml --genes {','.join(config['target_genes'])} --card-db {config['card_database']}"
+
+rule cooccurrence_analysis:
+    input:
+        mutations="mutations/mutation_calls/{sample}_mutations.csv"
+    output:
+        "cooccurrence/{sample}_cooccurrence_pairs.csv"
+    shell:
+        "python src/production_cooccurrence_analyzer.py --config config/snakemake_config.yaml --genes {','.join(config['target_genes'])} --card-db {config['card_database']}"
+
+rule results_aggregation:
+    input:
+        cooccurrence="cooccurrence/{sample}_cooccurrence_pairs.csv"
+    output:
+        "results/{sample}_final_report.json"
+    shell:
+        "python src/production_results_aggregator.py --config config/snakemake_config.yaml"

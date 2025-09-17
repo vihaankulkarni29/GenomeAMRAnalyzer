@@ -1,0 +1,241 @@
+# Efflux Pump Mutation Predictor - Main Configuration
+# Comprehensive configuration for the MetadataHarvester pipeline
+
+# =============================================================================
+# NCBI and Authentication Settings
+# =============================================================================
+
+# Required: Email for NCBI Entrez (used for all NCBI queries)
+email: "vihaankulkarni29@gmail.com"
+
+# Optional: NCBI API key for higher rate limits (recommended)
+api_key: "ef7622c2e716fa317fe04d24c42904211107"
+
+# =============================================================================
+# Pipeline Core Settings
+# =============================================================================
+
+# Target proteins for AMR analysis (25 total)
+target_proteins:
+  # AcrAB-TolC System (12 proteins)
+  - "AcrA"    # Periplasmic adaptor protein
+  - "AcrB"    # RND transporter (core pump)
+  - "TolC"    # Outer membrane factor
+  - "AcrZ"    # Membrane fusion protein
+  - "AcrR"    # Local transcriptional repressor
+  - "MarA"    # Multiple antibiotic resistance activator
+  - "MarR"    # Multiple antibiotic resistance repressor
+  - "RamA"    # Ram regulon activator
+  - "RamR"    # Ram regulon repressor
+  - "SoxS"    # Superoxide response regulator
+  - "Rob"     # Right origin binding regulator
+  - "EnvR"    # Envelope stress response regulator
+
+  # Other E. coli Pumps (5 proteins)
+  - "AcrD"    # RND efflux transporter AcrD
+  - "AcrE"    # RND efflux transporter AcrE
+  - "AcrF"    # RND efflux transporter AcrF
+  - "MdtB"    # Multidrug efflux transporter B
+  - "MdtC"    # Multidrug efflux transporter C
+
+  # Klebsiella pneumoniae Pumps (8 proteins)
+  - "OqxA"    # Oligoquinoline resistance protein A
+  - "OqxB"    # Oligoquinoline resistance protein B
+  - "EefA"    # Enterobacter efflux pump A
+  - "EefB"    # Enterobacter efflux pump B
+  - "EefC"    # Enterobacter efflux pump C
+  - "KexD"    # Klebsiella efflux protein D
+  - "KexE"    # Klebsiella efflux protein E
+  - "KexF"    # Klebsiella efflux protein F
+
+# XML Input Configuration (NEW APPROACH)
+# User provides NCBI search results as XML file instead of automated searching
+xml_input:
+  # Path to user-provided NCBI XML file (required)
+  xml_file: "data/sample_ncbi_search_results.xml"
+  
+  # Fallback: Search queries for NCBI Protein database (if XML not provided)
+  search_queries:
+    - "Escherichia coli AND RND Efflux Pumps AND MDR"
+    - "Gram negative AND RND Efflux Pumps AND AMR"
+    - "RND Efflux Pumps AND (AMR OR MDR)"
+    - "Klebsiella pneumoniae AND efflux pump AND resistance"
+    - "AcrAB-TolC AND antibiotic resistance"
+    - "RND transporter AND multidrug resistance"
+
+# =============================================================================
+# Reference Sequence Management
+# =============================================================================
+
+# Reference sequence directory
+reference_dir: "references"
+
+# Reference strains for different organisms
+reference_strains:
+  escherichia_coli: "K-12 MG1655"
+  klebsiella_pneumoniae: "ATCC 700603"
+  pseudomonas_aeruginosa: "PAO1"
+  acinetobacter_baumannii: "ATCC 19606"
+
+# Reference sequence quality parameters
+reference_quality:
+  min_sequence_length: 50
+  max_sequence_length: 2000
+  require_complete_sequences: true
+  validate_checksums: true
+
+# =============================================================================
+# Data Acquisition Settings
+# =============================================================================
+
+# Maximum results per query
+max_results: 1000
+
+# Batch processing size
+batch_size: 200
+
+# Rate limiting (seconds between requests)
+rate_limit_delay: 0.5
+
+# Retry attempts for failed requests
+retry_attempts: 3
+
+# Timeout for individual requests (seconds)
+request_timeout: 30
+
+# =============================================================================
+# Sequence Alignment Settings
+# =============================================================================
+
+# Alignment algorithm
+alignment_algorithm: "needle"  # EMBOSS needle (global alignment)
+
+# Alignment scoring parameters
+gap_open_penalty: -10.0
+gap_extend_penalty: -0.5
+match_score: 2
+mismatch_score: -1
+
+# Alignment quality thresholds
+min_alignment_score: 0.0
+min_sequence_identity: 0.0
+
+# =============================================================================
+# Analysis and Filtering
+# =============================================================================
+
+# Sequence length filters
+min_sequence_length: 50
+max_sequence_length: 2000
+
+# Exclude partial or predicted sequences
+exclude_partial: true
+exclude_predicted: false
+
+# Quality control
+require_experimentally_determined: true
+minimum_publication_count: 1
+
+# =============================================================================
+# Output and Formatting
+# =============================================================================
+
+# Results directory
+results_dir: "results"
+
+# Output format specifications
+output_format:
+  csv_delimiter: ','
+  include_metadata: true
+  fasta_header: '>{{accession}}|{{organism}}|{{protein_name}}|{{strain}}'
+  compression: "none"  # none, gzip, bzip2
+
+# Report generation
+generate_reports: true
+report_formats: ["html", "json", "txt"]
+
+# =============================================================================
+# Logging and Debugging
+# =============================================================================
+
+# Logging level
+log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+
+# Log file locations
+log_files:
+  main: "results/logs/pipeline.log"
+  harvest: "results/logs/harvest_proteins.log"
+  align: "results/logs/align_sequences.log"
+  scan: "results/logs/scan_substitutions.log"
+  references: "references/reference_manager.log"
+
+# Debug options
+debug_mode: false
+save_intermediates: true
+verbose_output: false
+
+# =============================================================================
+# Performance and Resources
+# =============================================================================
+
+# Parallel processing
+max_cores: 4
+memory_limit: "8GB"
+
+# Resource management
+cleanup_intermediates: true
+compress_outputs: false
+
+# =============================================================================
+# Integration Settings
+# =============================================================================
+
+# Snakemake integration
+use_conda: true
+conda_env: "metadataharvester"
+
+# External tool paths
+blast_path: ""  # Leave empty to use system PATH
+emboss_path: ""  # Leave empty to use system PATH
+
+# Database connections (for future use)
+database:
+  enabled: false
+  type: "sqlite"  # sqlite, postgresql, mysql
+  path: "results/pipeline.db"
+
+# =============================================================================
+# Advanced Options
+# =============================================================================
+
+# Custom search filters
+custom_filters:
+  - "NOT hypothetical protein"
+  - "NOT putative protein"
+  - "NOT unnamed protein"
+
+# Quality metrics
+quality_metrics:
+  enable_sequence_complexity_check: true
+  enable_composition_analysis: true
+  enable_domain_validation: false
+
+# Backup and recovery
+backup:
+  enabled: true
+  max_backups: 5
+  backup_dir: "results/backups"
+
+# =============================================================================
+# Version and Metadata
+# =============================================================================
+
+# Configuration version
+version: "2.0"
+created: "2024-08-29"
+author: "EffluxPumpMutationTracker Pipeline"
+description: "Configuration for Efflux Pump Mutation Predictor - MetadataHarvester"
+
+# Validation
+validated: true
+validation_date: "2024-08-29"

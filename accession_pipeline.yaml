@@ -1,0 +1,44 @@
+database:
+  path: "priority3.db"
+
+logging:
+  log_dir: "logs"
+
+ncbi:
+  email: "vihaankulkarni29@gmail.com"
+  api_key: ""  # optional
+  mock_mode: false
+
+input:
+  # Option A: provide a text file with one accession per line
+  accessions_file: "accession_list.txt"
+  # Option B: inline list of accessions
+  # accessions: ["GCF_000005845.2", "GCF_000006765.1"]
+  # Gene list file with one gene symbol per line (e.g., acrA, acrB, tolC)
+  gene_list_file: "gene_list.txt"
+  # Optional text query for genome search when no explicit accessions are given
+  genome_query: "Escherichia coli[Organism]"
+  # Safety cap for query-based harvesting
+  max_genomes: 10
+
+# Output directories for each stage
+genome_output_dir: "genome_data"
+card_output_dir: "card_results"
+extractor_output_dir: "extracted_proteins"
+alignment_output_dir: "alignments"
+subscan_output_dir: "subscan_results"
+cooccurrence_output_dir: "cooccurrence_results"
+
+# Reference protein directory for wildtype aligner (user-provided FASTA files)
+reference_dir: "reference_proteins"
+
+# Optional tunables
+subscan:
+  min_confidence: "MEDIUM"
+
+cooccurrence:
+  min_count: 3
+  significance_level: 0.01
+
+# Optional run identifier for report provenance
+run_id: "realworld_run_1"

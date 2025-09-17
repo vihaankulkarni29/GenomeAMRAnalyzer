@@ -1,0 +1,69 @@
+# Reference Sequence Manager Configuration
+# Configuration file for managing reference sequences in the Efflux Pump Mutation Predictor
+
+# NCBI Entrez credentials (required)
+email: "vihaankulkarni29@gmail.com"  # Replace with your email
+api_key: ""  # Optional: NCBI API key for higher rate limits
+
+# Directory configuration
+reference_dir: "references"
+backup_dir: "references/backup"
+results_dir: "results"
+logs_dir: "results/logs"
+
+# Metadata and logging
+metadata_file: "references/metadata.json"
+log_file: "references/reference_manager.log"
+
+# Target proteins for AMR analysis
+target_proteins:
+  # AcrAB-TolC System
+  - "AcrA"
+  - "AcrB"
+  - "TolC"
+  - "AcrZ"
+  - "AcrR"
+  - "MarA"
+  - "MarR"
+  - "RamA"
+  - "RamR"
+  - "SoxS"
+  - "Rob"
+  - "EnvR"
+  # Other E. coli Pumps
+  - "AcrD"
+  - "AcrE"
+  - "AcrF"
+  - "MdtB"
+  - "MdtC"
+  # Klebsiella pneumoniae Pumps
+  - "OqxA"
+  - "OqxB"
+  - "EefA"
+  - "EefB"
+  - "EefC"
+  - "KexD"
+  - "KexE"
+  - "KexF"
+
+# Reference strains for different organisms
+reference_strains:
+  escherichia_coli: "K-12 MG1655"
+  klebsiella_pneumoniae: "ATCC 700603"
+  pseudomonas_aeruginosa: "PAO1"
+  acinetobacter_baumannii: "ATCC 19606"
+
+# Quality control parameters
+min_sequence_length: 50
+max_sequence_length: 2000
+validation_timeout: 30
+retry_attempts: 3
+
+# Logging configuration
+log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+
+# Advanced options
+auto_backup: true
+checksum_verification: true
+strict_validation: false
+update_existing: false
