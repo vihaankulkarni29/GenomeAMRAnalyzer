@@ -1,3 +1,3 @@
 genome_id,gene_name,contig_id,start,end,strand,aro_id,drug_class,resistance_mechanism
-KWV17775.1_genome,acrA,KWV17775.1_genome,1000,2000,+,ARO:3000001,fluoroquinolone antibiotic,efflux pump complex or subunit conferring antibiotic resistance
-KWV17775.1_genome,acrB,KWV17775.1_genome,2500,3500,+,ARO:3000002,fluoroquinolone antibiotic,efflux pump complex or subunit conferring antibiotic resistance
+KWV17775.1_genome,ermA,KWV17775.1_genome,1000,2000,+,ARO:3000001,fluoroquinolone antibiotic,efflux pump complex or subunit conferring antibiotic resistance
+KWV17775.1_genome,ermB,KWV17775.1_genome,2500,3500,+,ARO:3000002,fluoroquinolone antibiotic,efflux pump complex or subunit conferring antibiotic resistance

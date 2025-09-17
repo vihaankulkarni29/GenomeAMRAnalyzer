@@ -39,8 +39,14 @@ Results automatically open in your browser, or check: `reports/pipeline_report.h
 
 ### 🔬 **Researchers & Scientists**
 ```bash
-# Publication-ready analysis
-python run_pipeline.py --config config/snakemake_config.yaml
+# From NCBI URL + custom genes
+python run_pipeline.py --config config/snakemake_config.yaml \
+  --url "https://www.ncbi.nlm.nih.gov/nuccore/(Escherichia%20coli%20AND%20erythromycin%20resistance)" \
+  --genes-file config/genes_erythromycin.txt
+
+# From accession list + default genes  
+python run_pipeline.py --config config/snakemake_config.yaml \
+  --accessions-file my_accessions.txt
 # → Comprehensive reports with statistics and visualizations
 ```
 
@@ -49,19 +55,31 @@ python run_pipeline.py --config config/snakemake_config.yaml
 # Educational mode with explanations
 python genomeamr.py --tutorial --explain-steps
 # → Step-by-step learning experience
+
+# Quick analysis with pre-defined gene sets
+python run_pipeline.py --config config/snakemake_config.yaml \
+  --accessions-file examples/test_accessions.txt \
+  --genes-file config/genes_default.txt
 ```
 
 ### 🏥 **Clinical Labs**
 ```bash
-# Fast screening mode
+# Beta-lactam resistance screening
+python run_pipeline.py --config config/snakemake_config.yaml \
+  --url "https://www.ncbi.nlm.nih.gov/nuccore/(clinical%20isolates%20AND%20ESBL)" \
+  --genes-file config/genes_betalactam.txt
+
+# Fast screening mode (legacy CLI)
 python genomeamr.py --clinical-mode --genes acrA,acrB,tolC
 # → Focus on clinically relevant resistance genes
 ```
 
 ### 💻 **Bioinformaticians**
 ```bash
-# Full pipeline control
-python run_pipeline.py --config custom_config.yaml
+# Full pipeline control with custom everything
+python run_pipeline.py --config custom_config.yaml \
+  --accessions-file large_dataset.txt \
+  --genes-file custom_genes.txt
 # → Complete customization and batch processing
 ```
 
@@ -206,16 +224,29 @@ python pipeline.py \
 
 ### Windows Quickstart
 
-If you prefer a simple one-click run on Windows, use `run_user_pipeline.bat`:
+**Option 1: Simple one-click (uses config defaults)**
+- Double-click `run_user_pipeline.bat` 
+- Edit `config/snakemake_config.yaml` first: set `ncbi.email` to your email
 
-- Double-click `run_user_pipeline.bat` or run it from a terminal. It will:
-    - Use `config/snakemake_config.yaml`
-    - Create a `logs` folder
-    - Save output to `logs/user_pipeline.out` and errors to `logs/user_pipeline.err`
+**Option 2: Command line with URL and custom genes**
+```bash
+# Analyze erythromycin resistance from NCBI search
+python run_pipeline.py --config config/snakemake_config.yaml \
+  --url "https://www.ncbi.nlm.nih.gov/nuccore/(Escherichia%20coli%20AND%20erythromycin%20resistance)" \
+  --genes-file config/genes_erythromycin.txt
 
-Important: Edit `config/snakemake_config.yaml` and set `ncbi.email` to your email before running.
+# Analyze your own accession list with beta-lactam genes
+python run_pipeline.py --config config/snakemake_config.yaml \
+  --accessions-file my_accessions.txt \
+  --genes-file config/genes_betalactam.txt
+```
 
-## 📋 Requirements
+**Pre-made gene lists:**
+- `config/genes_default.txt` - Broad AMR analysis (35+ genes)
+- `config/genes_erythromycin.txt` - Macrolide resistance focus
+- `config/genes_betalactam.txt` - Beta-lactamase focus
+
+Important: Edit `config/snakemake_config.yaml` and set `ncbi.email` to your email before running.## 📋 Requirements
 
 ### System Requirements
 biopython>=1.79

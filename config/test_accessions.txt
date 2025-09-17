@@ -1,0 +1,5 @@
+# Test accessions for GenomeAMRAnalyzer
+# Small E. coli genomes for testing
+GCF_000005825.2
+GCF_000006945.2
+GCF_000008865.2

@@ -1,0 +1,28 @@
+# Erythromycin resistance genes
+# Focus on macrolide resistance mechanisms
+
+# Ribosomal methyltransferases
+ermA
+ermB
+ermC
+ermF
+
+# Efflux pumps
+msrA
+msrB
+mefA
+mefE
+
+# Phosphotransferases
+mphA
+mphB
+mphC
+
+# Lincosamide resistance
+linA
+linB
+
+# General multidrug efflux (also affect macrolides)
+acrA
+acrB
+tolC

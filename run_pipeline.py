@@ -2,7 +2,7 @@
 """
 GenomeAMRAnalyzer Orchestrator
 Runs the full pipeline end-to-end using existing modules and config:
-1) SimpleGenomeDownloader (optional: skip if genomes already present)
+1) URL/Accession resolution and genome download
 2) CARDRunner (RGI) to produce coordinates
 3) FastaAAExtractor to generate protein FASTAs
 4) SimplifiedWildTypeAligner (optional)
@@ -10,7 +10,7 @@ Runs the full pipeline end-to-end using existing modules and config:
 6) ProductionCooccurrenceAnalyzer (optional)
 7) HTMLReportGenerator (optional)
 
-Windows-friendly; uses Python 3.14 env already configured.
+Supports NCBI URLs, accession lists, and custom gene lists.
 """
 
 import argparse
@@ -18,6 +18,64 @@ import json
 import sys
 import time
 from pathlib import Path
+from shutil import which
+from typing import List, Optional
+
+# Import NCBI URL utility if available
+try:
+    from src.utils.ncbi_url import url_to_accessions
+    NCBI_URL_AVAILABLE = True
+except ImportError:
+    NCBI_URL_AVAILABLE = False
+    url_to_accessions = None
+
+
+def load_genes_from_file(genes_file: Path) -> List[str]:
+    """Load gene list from text file, one gene per line."""
+    if not genes_file.exists():
+        return []
+    
+    genes = []
+    with genes_file.open("r", encoding="utf-8") as f:
+        for line in f:
+            gene = line.strip()
+            if gene and not gene.startswith("#"):
+                genes.append(gene)
+    return genes
+
+
+def check_external_tools(config: dict) -> None:
+    """Check if required external tools are available."""
+    issues = []
+    
+    # Check RGI if not using fallback simulation
+    rgi_config = config.get("tools", {}).get("rgi", {})
+    if not rgi_config.get("fallback_simulation", True):
+        if not which("rgi"):
+            issues.append("RGI not found in PATH (fallback_simulation=false)")
+    
+    # Check EMBOSS water for alignment
+    alignment_config = config.get("tools", {}).get("alignment", {})
+    if alignment_config.get("algorithm", "water").lower() == "water":
+        if not which("water"):
+            issues.append("EMBOSS water not found in PATH (try: conda install -c bioconda emboss)")
+    
+    if issues:
+        print("\n[PREFLIGHT] External tool warnings:")
+        for issue in issues:
+            print(f"  - {issue}")
+        print("Pipeline will use fallback/simulation modes where possible.\n")
+
+
+def resolve_accessions_from_url(url: str, email: str, api_key: Optional[str], max_genomes: int) -> List[str]:
+    """Resolve NCBI URL to accession list."""
+    if not NCBI_URL_AVAILABLE or url_to_accessions is None:
+        raise ImportError("Bio.Entrez required for URL processing. Install: pip install biopython")
+    
+    print(f"[INFO] Resolving accessions from URL: {url}")
+    accessions = url_to_accessions(url, email, api_key, max_genomes)
+    print(f"[INFO] Found {len(accessions)} accessions")
+    return accessions
 
 
 def run_cmd(cmd: list[str], cwd: Path | None = None) -> int:
@@ -30,11 +88,22 @@ def run_cmd(cmd: list[str], cwd: Path | None = None) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run GenomeAMRAnalyzer full pipeline")
     parser.add_argument("--config", default="config/snakemake_config.yaml", help="Pipeline config YAML")
+    
+    # Input sources (mutually exclusive)
+    input_group = parser.add_mutually_exclusive_group()
+    input_group.add_argument("--url", help="NCBI nuccore URL to resolve to accessions")
+    input_group.add_argument("--accessions-file", help="Text file with accessions (one per line)")
+    
+    # Gene targets
+    parser.add_argument("--genes-file", help="Text file with target genes (one per line)")
+    
+    # Pipeline control
     parser.add_argument("--skip-download", action="store_true", help="Skip genome download step")
     parser.add_argument("--skip-align", action="store_true", help="Skip alignment step")
     parser.add_argument("--skip-subscan", action="store_true", help="Skip mutation analysis step")
     parser.add_argument("--skip-cooccurrence", action="store_true", help="Skip co-occurrence analysis")
     parser.add_argument("--skip-report", action="store_true", help="Skip HTML report generation")
+    
     args = parser.parse_args()
 
     project = Path(__file__).resolve().parent
@@ -42,9 +111,31 @@ def main() -> int:
 
     # Load config values
     import yaml
-    with open(project / args.config, "r", encoding="utf-8") as f:
+    config_path = project / args.config
+    if not config_path.exists():
+        print(f"Config file not found: {config_path}")
+        return 1
+        
+    with config_path.open("r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
 
+    # Check external tools
+    check_external_tools(cfg)
+
+    # Resolve target genes
+    target_genes = []
+    if args.genes_file:
+        genes_path = Path(args.genes_file)
+        target_genes = load_genes_from_file(genes_path)
+        if not target_genes:
+            print(f"No genes found in {genes_path}")
+            return 1
+        print(f"[INFO] Using {len(target_genes)} genes from {genes_path}")
+    else:
+        target_genes = cfg.get("analysis", {}).get("target_genes", ["acrA", "acrB", "tolC"])
+        print(f"[INFO] Using {len(target_genes)} genes from config")
+
+    # Setup directories
     dirs = cfg.get("directories", {})
     genomes_dir = project / dirs.get("genomes", "genome_data/fasta")
     card_dir = project / dirs.get("card_results", "card_results")
@@ -52,30 +143,72 @@ def main() -> int:
     align_dir = project / dirs.get("alignments", "alignments")
     results_dir = project / dirs.get("results", "results")
     reports_dir = project / dirs.get("reports", "reports")
+    temp_dir = project / dirs.get("temp", "temp")
 
-    target_genes = cfg.get("target_genes", ["acrA", "acrB", "tolC"])
+    for directory in [genomes_dir, card_dir, proteins_dir, align_dir, results_dir, reports_dir, temp_dir]:
+        directory.mkdir(parents=True, exist_ok=True)
 
-    genomes_dir.mkdir(parents=True, exist_ok=True)
-    card_dir.mkdir(parents=True, exist_ok=True)
-    proteins_dir.mkdir(parents=True, exist_ok=True)
-    align_dir.mkdir(parents=True, exist_ok=True)
-    results_dir.mkdir(parents=True, exist_ok=True)
-    reports_dir.mkdir(parents=True, exist_ok=True)
+    # Resolve accessions
+    accessions_file = None
+    if args.url:
+        # Resolve URL to accessions
+        ncbi_cfg = cfg.get("ncbi", {})
+        email = ncbi_cfg.get("email", "")
+        api_key = ncbi_cfg.get("api_key") or None
+        max_genomes = ncbi_cfg.get("max_genomes", 50)
+        
+        if not email or email.startswith("your.email"):
+            print("Error: Set ncbi.email in config before using --url")
+            return 1
+        
+        try:
+            accessions = resolve_accessions_from_url(args.url, email, api_key, max_genomes)
+            if not accessions:
+                print("No accessions found for URL")
+                return 1
+            
+            # Write to temp file
+            accessions_file = temp_dir / "url_accessions.txt"
+            with accessions_file.open("w") as f:
+                for acc in accessions:
+                    f.write(f"{acc}\n")
+            print(f"[INFO] Wrote {len(accessions)} accessions to {accessions_file}")
+            
+        except Exception as e:
+            print(f"Error resolving URL: {e}")
+            return 1
+            
+    elif args.accessions_file:
+        accessions_file = Path(args.accessions_file)
+        if not accessions_file.exists():
+            print(f"Accessions file not found: {accessions_file}")
+            return 1
+    else:
+        # Try default location
+        default_accessions = project / "test_pipeline" / "test_accessions.txt"
+        if default_accessions.exists():
+            accessions_file = default_accessions
+            print(f"[INFO] Using default accessions file: {accessions_file}")
+        else:
+            print("Error: Provide --url or --accessions-file")
+            return 1
 
-    # 1) Optional: Download genomes (from accession list if exists)
-    if not args.skip_download:
-        accessions_file = project / "test_pipeline" / "test_accessions.txt"
-        if accessions_file.exists():
-            rc = run_cmd([
-                py, str(project / "src" / "simple_genome_downloader.py"),
-                "--accession-list", str(accessions_file),
-                "--output-dir", str(genomes_dir),
-                "--batch-size", "3"
-            ], cwd=project)
-            if rc != 0:
-                print("Downloader failed; continuing if genomes already present...")
+    # 1) Download genomes (from resolved accessions)
+    if not args.skip_download and accessions_file:
+        print(f"[STEP 1] Downloading genomes from {accessions_file}")
+        rc = run_cmd([
+            py, str(project / "src" / "simple_genome_downloader.py"),
+            "--accession-list", str(accessions_file),
+            "--output-dir", str(genomes_dir),
+            "--batch-size", "3"
+        ], cwd=project)
+        if rc != 0:
+            print("Downloader failed; continuing if genomes already present...")
+    else:
+        print("[STEP 1] Skipping genome download")
 
     # 2) CARD RGI step - check for actual genome files
+    print(f"[STEP 2] Running CARD analysis for {len(target_genes)} genes")
     actual_genome_dir = genomes_dir / "fasta"  # Downloader creates fasta subdirectory
     if actual_genome_dir.exists():
         genome_input_dir = actual_genome_dir

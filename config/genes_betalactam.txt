@@ -1,0 +1,30 @@
+# Beta-lactam resistance genes
+# Focus on beta-lactamases and related mechanisms
+
+# Extended-spectrum beta-lactamases (ESBLs)
+blaCTX-M
+blaTEM
+blaSHV
+blaOXA
+
+# Carbapenemases
+blaKPC
+blaNDM
+blaOXA-48
+blaVIM
+blaIMP
+
+# AmpC beta-lactamases
+blaCMY
+blaDHA
+blaFOX
+
+# Penicillin-binding proteins
+pbp1A
+pbp2
+pbp3
+
+# Efflux pumps affecting beta-lactams
+acrA
+acrB
+tolC

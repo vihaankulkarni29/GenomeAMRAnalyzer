@@ -1,0 +1,46 @@
+# Default AMR resistance genes for broad analysis
+# Covers major resistance mechanisms in Enterobacteriaceae
+
+# RND efflux pumps (primary)
+acrA
+acrB
+tolC
+
+# Alternative efflux systems
+acrD
+acrE
+acrF
+mdtE
+mdtF
+
+# Pseudomonas efflux pumps
+mexA
+mexB
+oprM
+mexC
+mexD
+mexE
+mexF
+
+# Beta-lactamases (common)
+blaTEM
+blaCTX-M
+blaSHV
+blaOXA
+
+# Aminoglycoside resistance
+aac
+ant
+aph
+
+# Fluoroquinolone resistance
+gyrA
+gyrB
+parC
+parE
+
+# Regulation
+marA
+soxS
+rob
+acrR

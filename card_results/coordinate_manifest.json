@@ -1,7 +1,20 @@
 {
   "manifest_version": "1.0",
-  "generated_timestamp": "2025-09-17 08:04:08",
+  "generated_timestamp": "2025-09-17 12:02:01",
   "target_genes": [
+    "ermA",
+    "ermB",
+    "ermC",
+    "ermF",
+    "msrA",
+    "msrB",
+    "mefA",
+    "mefE",
+    "mphA",
+    "mphB",
+    "mphC",
+    "linA",
+    "linB",
     "acrA",
     "acrB",
     "tolC"
@@ -10,51 +23,27 @@
   "successful_accessions": 3,
   "failed_accessions": 0,
   "accessions": {
-    "APQ19878.1_genome": {
-      "coordinate_file": "C:\\Users\\Vihaan\\Documents\\GenomeAMRAnalyzer\\card_results\\coordinates\\APQ19878.1_genome_coordinates.csv",
-      "target_genes_found": 2,
-      "genes": [
-        {
-          "gene_name": "acrA",
-          "contig_id": "APQ19878.1_genome",
-          "start": 1000,
-          "end": 2000,
-          "strand": "+",
-          "cut_off": "Perfect",
-          "analysis_timestamp": "2025-09-17 08:04:08"
-        },
-        {
-          "gene_name": "acrB",
-          "contig_id": "APQ19878.1_genome",
-          "start": 2500,
-          "end": 3500,
-          "strand": "+",
-          "cut_off": "Perfect",
-          "analysis_timestamp": "2025-09-17 08:04:08"
-        }
-      ]
-    },
     "AQU94137.1_genome": {
       "coordinate_file": "C:\\Users\\Vihaan\\Documents\\GenomeAMRAnalyzer\\card_results\\coordinates\\AQU94137.1_genome_coordinates.csv",
       "target_genes_found": 2,
       "genes": [
         {
-          "gene_name": "acrA",
+          "gene_name": "ermA",
           "contig_id": "AQU94137.1_genome",
           "start": 1000,
           "end": 2000,
           "strand": "+",
           "cut_off": "Perfect",
-          "analysis_timestamp": "2025-09-17 08:04:08"
+          "analysis_timestamp": "2025-09-17 12:02:01"
         },
         {
-          "gene_name": "acrB",
+          "gene_name": "ermB",
           "contig_id": "AQU94137.1_genome",
           "start": 2500,
           "end": 3500,
           "strand": "+",
           "cut_off": "Perfect",
-          "analysis_timestamp": "2025-09-17 08:04:08"
+          "analysis_timestamp": "2025-09-17 12:02:01"
         }
       ]
     },
@@ -63,22 +52,46 @@
       "target_genes_found": 2,
       "genes": [
         {
-          "gene_name": "acrA",
+          "gene_name": "ermA",
           "contig_id": "KWV17775.1_genome",
           "start": 1000,
           "end": 2000,
           "strand": "+",
           "cut_off": "Perfect",
-          "analysis_timestamp": "2025-09-17 08:04:08"
+          "analysis_timestamp": "2025-09-17 12:02:01"
         },
         {
-          "gene_name": "acrB",
+          "gene_name": "ermB",
           "contig_id": "KWV17775.1_genome",
           "start": 2500,
           "end": 3500,
           "strand": "+",
           "cut_off": "Perfect",
-          "analysis_timestamp": "2025-09-17 08:04:08"
+          "analysis_timestamp": "2025-09-17 12:02:01"
+        }
+      ]
+    },
+    "APQ19878.1_genome": {
+      "coordinate_file": "C:\\Users\\Vihaan\\Documents\\GenomeAMRAnalyzer\\card_results\\coordinates\\APQ19878.1_genome_coordinates.csv",
+      "target_genes_found": 2,
+      "genes": [
+        {
+          "gene_name": "ermA",
+          "contig_id": "APQ19878.1_genome",
+          "start": 1000,
+          "end": 2000,
+          "strand": "+",
+          "cut_off": "Perfect",
+          "analysis_timestamp": "2025-09-17 12:02:01"
+        },
+        {
+          "gene_name": "ermB",
+          "contig_id": "APQ19878.1_genome",
+          "start": 2500,
+          "end": 3500,
+          "strand": "+",
+          "cut_off": "Perfect",
+          "analysis_timestamp": "2025-09-17 12:02:01"
         }
       ]
     }
