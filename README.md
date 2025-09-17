@@ -204,6 +204,17 @@ python pipeline.py \
     --output results/
 ```
 
+### Windows Quickstart
+
+If you prefer a simple one-click run on Windows, use `run_user_pipeline.bat`:
+
+- Double-click `run_user_pipeline.bat` or run it from a terminal. It will:
+    - Use `config/snakemake_config.yaml`
+    - Create a `logs` folder
+    - Save output to `logs/user_pipeline.out` and errors to `logs/user_pipeline.err`
+
+Important: Edit `config/snakemake_config.yaml` and set `ncbi.email` to your email before running.
+
 ## 📋 Requirements
 
 ### System Requirements
