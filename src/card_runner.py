@@ -414,8 +414,8 @@ class CARDRunner:
             # Create mock RGI output file
             mock_results = []
             
-            # Add mock results for target genes
-            for i, gene in enumerate(self.config.target_genes[:2]):  # Mock first 2 genes
+            # Add mock results for ALL target genes
+            for i, gene in enumerate(self.config.target_genes):  # Mock ALL target genes
                 mock_results.append({
                     "ORF_ID": f"{genome_file.stem}_{i+1}",
                     "Contig": genome_file.stem,

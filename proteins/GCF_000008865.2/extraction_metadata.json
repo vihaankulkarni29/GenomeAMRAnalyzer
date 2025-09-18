@@ -1,7 +1,7 @@
 {
   "extraction_stats": {
     "total_genomes": 0,
-    "total_genes_requested": 2,
+    "total_genes_requested": 4,
     "successful_extractions": 0,
     "failed_extractions": 0,
     "sequences_generated": 0

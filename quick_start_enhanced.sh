@@ -187,6 +187,16 @@ case $choice in
             genes="config/genes_default.txt"
         fi
         
+        # Fix Windows path issues in bash
+        if [[ "$genes" == *":"* ]] && [[ "$genes" != *"\\"* ]] && [[ "$genes" != *"/"* ]]; then
+            echo -e "${YELLOW}⚠️ Detected Windows path without backslashes. Trying to fix...${NC}"
+            # Convert C:UsersPath to C:\Users\Path or use forward slashes
+            genes_fixed=$(echo "$genes" | sed 's/C:Users/C:\/Users/' | sed 's/\([A-Z]:\)\([A-Za-z]\)/\1\/\2/g')
+            echo "   Original: $genes"
+            echo "   Fixed to: $genes_fixed"
+            genes="$genes_fixed"
+        fi
+        
         echo
         echo -e "${BLUE}Running custom analysis...${NC}"
         
@@ -228,3 +238,55 @@ echo -e "${GREEN}Analysis complete!${NC}"
 echo -e "${GREEN}Check the 'reports' folder for results.${NC}"
 echo -e "${GREEN}========================================${NC}"
 pause_and_exit 0
+
+#!/bin/bash
+
+# Helper functions for colored output
+info()    { echo -e "\033[1;34m[INFO]\033[0m $1"; }
+success() { echo -e "\033[1;32m[SUCCESS]\033[0m $1"; }
+error()   { echo -e "\033[1;31m[ERROR]\033[0m $1"; }
+
+# Activate Conda environment
+CONDA_ENV="GenomeAMRAnalyzer_env"
+if conda info --envs | grep -q "$CONDA_ENV"; then
+    info "Activating existing Conda environment: $CONDA_ENV..."
+    source "$(conda info --base)/etc/profile.d/conda.sh"
+    conda activate "$CONDA_ENV"
+else
+    info "Creating new Conda environment: $CONDA_ENV..."
+    conda create -y -n "$CONDA_ENV" python=3.10
+    source "$(conda info --base)/etc/profile.d/conda.sh"
+    conda activate "$CONDA_ENV"
+    info "Installing required packages..."
+    pip install -r requirements.txt
+    pip install rgi
+fi
+
+# Interactive user prompts
+read -p "[PROMPT] Please enter the path to your genome accession list file: " ACCESSION_FILE
+read -p "[PROMPT] Please enter the path to your gene list file: " GENE_FILE
+read -p "[PROMPT] Please enter your email address: " USER_EMAIL
+
+# Input validation
+if [ ! -f "$ACCESSION_FILE" ]; then
+    error "Accession list file not found: $ACCESSION_FILE"
+    exit 1
+fi
+
+if [ ! -f "$GENE_FILE" ]; then
+    error "Gene list file not found: $GENE_FILE"
+    exit 1
+fi
+
+if [[ "$USER_EMAIL" != *"@"* ]]; then
+    error "Invalid email address: $USER_EMAIL"
+    exit 1
+fi
+
+# Build and echo the command
+PY_CMD="python3 genomeamr_auto.py --accessions \"$ACCESSION_FILE\" --genes \"$GENE_FILE\" --email \"$USER_EMAIL\""
+info "The following command will be executed:"
+echo "$PY_CMD"
+
+info "Starting GenomeAMRAnalyzer pipeline..."
+eval $PY_CMD

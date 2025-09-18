@@ -64,17 +64,42 @@ Pre-built gene lists:
     # Parse arguments
     args = parser.parse_args()
     
+    # Fix path handling for Windows paths in bash environments
+    def fix_windows_path(path_str):
+        """Fix Windows paths that lose backslashes in bash environments"""
+        if path_str and ':' in path_str and '\\' not in path_str and '/' not in path_str:
+            # Likely a Windows path missing backslashes: C:UsersName -> C:\Users\Name
+            if path_str.startswith('C:Users'):
+                path_str = 'C:\\Users\\' + path_str[7:]
+            elif path_str.startswith('D:Users'):
+                path_str = 'D:\\Users\\' + path_str[7:]
+            # Add more drive letters as needed
+            # Replace remaining drive-letter patterns
+            import re
+            path_str = re.sub(r'([A-Z]:)([A-Za-z])', r'\1\\\2', path_str)
+        return path_str
+    
+    # Apply path fixes
+    args.genes = fix_windows_path(args.genes)
+    if args.accessions:
+        args.accessions = fix_windows_path(args.accessions)
+    args.config = fix_windows_path(args.config)
+    
     # Validate inputs
     if not Path(args.genes).exists():
         print(f"❌ Gene list file not found: {args.genes}")
+        print(f"   Looked for: {Path(args.genes).resolve()}")
+        print(f"   Tip: Use forward slashes or double backslashes in paths")
         return 1
     
     if not Path(args.config).exists():
         print(f"❌ Config file not found: {args.config}")
+        print(f"   Looked for: {Path(args.config).resolve()}")
         return 1
     
     if args.accessions and not Path(args.accessions).exists():
         print(f"❌ Accessions file not found: {args.accessions}")
+        print(f"   Looked for: {Path(args.accessions).resolve()}")
         return 1
     
     # Show banner

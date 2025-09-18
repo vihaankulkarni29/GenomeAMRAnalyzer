@@ -1,0 +1,33 @@
+	Understanding the logical idea (no technical jargon just logic behind how it works) behind all important steps/modules of the pipeline
+
+User inputs three major things, 
+a url to the NCBI Search query or an accession list which you can download: maybe Escherichia coli and Erythromycin resistance and complete genome
+a list of genes that they want analyzed from the tool : acrB, acrA, mdtH, mdtG etc
+their email id
+
+here is where the module starts 
+
+NCBI Genome Extractor, 
+this is the start of our pipeline because this there are no genomes on which we can conduct our analysis. NCBI Genome harvester requires two major things, which is the url (this contains all the genomes that came up after the NCBI Search Query) or an accession list (which is a simple list of genome accession they want harvesterd from NCBI). The second thing we require is their email because we need to access NCBI and without an email we can not access and harvest all these different genomes.
+One major thing that NCBI Genome Harvester also does is collect high quality metadata about the genomes it is harvesting; their biosample, bioproject, date of collection and many more. For a more deeper understanding go here: https://github.com/vihaankulkarni29/ncbi_genome_extractor
+NCBI Search Query -> NCBI Genome Extractor -> CARD RGI Integration 
+
+NCBI Genome Extractor in summary utilises two of the inputs from the user and generates two things, high quality metadata and genome fastas
+
+CARD RGI integraton (Already explained)
+
+Uses 1 major input: Genome fasta
+outputs: Coordinates of all the antimicrobial resistant genes present within the genomes (respectively) (maintains an accurate naming system for better accessibility)
+NCBI Genome Extractor -> CARD RGI Integration -> FastaAAExtractor 
+
+FastaAAExtractor (already explained) 
+
+Input: Coordinate files for each genome (respectively)
+       Genome fasta files (of each individual genome)
+       Gene list (to extract only these genes/proteins coded by these genes from the respective genome fasta according to the respective coordinate file)
+
+Output: Protein fastas (protein which the genes code for) named according to the genome they have been extracted from 
+
+
+CARD RGI Integration -> FastaAAExtractor -> WildTypeAligner
+

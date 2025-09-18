@@ -1,4 +1,4 @@
 protein_accession,genome_accession,organism,assembly_level,genome_size,fasta_file,date
-GCF_000005825.2,GCA_GCF_000005825.2_genome,Mock_organism_for_GCF_000005825.2,Complete Genome,5000000,C:\Users\Vihaan\Documents\GenomeAMRAnalyzer\genome_data\fasta\fasta\GCF_000005825.2_genome.fasta,2025-09-17
-GCF_000008865.2,GCA_GCF_000008865.2_genome,Mock_organism_for_GCF_000008865.2,Complete Genome,5000000,C:\Users\Vihaan\Documents\GenomeAMRAnalyzer\genome_data\fasta\fasta\GCF_000008865.2_genome.fasta,2025-09-17
-GCF_000006945.2,GCA_GCF_000006945.2_genome,Mock_organism_for_GCF_000006945.2,Complete Genome,5000000,C:\Users\Vihaan\Documents\GenomeAMRAnalyzer\genome_data\fasta\fasta\GCF_000006945.2_genome.fasta,2025-09-17
+NZ_JAVALE010000224.1,GCA_NZ_JAVALE010000224.1_genome,Mock_organism_for_NZ_JAVALE010000224.1,Complete Genome,5000000,C:\Users\Vihaan\Documents\GenomeAMRAnalyzer\genome_data\fasta\fasta\NZ_JAVALE010000224.1_genome.fasta,2025-09-17
+NZ_JBKQCO010000014.1,GCA_NZ_JBKQCO010000014.1_genome,Mock_organism_for_NZ_JBKQCO010000014.1,Complete Genome,5000000,C:\Users\Vihaan\Documents\GenomeAMRAnalyzer\genome_data\fasta\fasta\NZ_JBKQCO010000014.1_genome.fasta,2025-09-17
+DBJXUX000000000.1,GCA_DBJXUX000000000.1_genome,Mock_organism_for_DBJXUX000000000.1,Complete Genome,5000000,C:\Users\Vihaan\Documents\GenomeAMRAnalyzer\genome_data\fasta\fasta\DBJXUX000000000.1_genome.fasta,2025-09-17

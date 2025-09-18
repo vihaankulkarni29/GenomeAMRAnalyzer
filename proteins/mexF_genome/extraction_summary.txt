@@ -1,0 +1,11 @@
+FastaAAExtractor Integration - Extraction Summary
+==================================================
+
+Extraction Date: 2025-09-17T22:36:26.265498
+Total Genomes: 0
+Total Genes Requested: 4
+Successful Extractions: 0
+Failed Extractions: 0
+Sequences Generated: 0
+
+Genes Extracted:
