@@ -1,5 +1,0 @@
-genome_id,gene_name,contig_id,start,end,strand,aro_id,drug_class,resistance_mechanism
-NZ_JAVALE010000224.1_genome,acrB,NZ_JAVALE010000224.1_genome,1000,2000,+,ARO:3000001,fluoroquinolone antibiotic,efflux pump complex or subunit conferring antibiotic resistance
-NZ_JAVALE010000224.1_genome,acrA,NZ_JAVALE010000224.1_genome,2500,3500,+,ARO:3000002,fluoroquinolone antibiotic,efflux pump complex or subunit conferring antibiotic resistance
-NZ_JAVALE010000224.1_genome,tolC,NZ_JAVALE010000224.1_genome,4000,5000,+,ARO:3000003,fluoroquinolone antibiotic,efflux pump complex or subunit conferring antibiotic resistance
-NZ_JAVALE010000224.1_genome,acrR,NZ_JAVALE010000224.1_genome,5500,6500,+,ARO:3000004,fluoroquinolone antibiotic,efflux pump complex or subunit conferring antibiotic resistance

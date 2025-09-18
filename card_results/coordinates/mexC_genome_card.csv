@@ -1,5 +1,0 @@
-genome_id,gene_name,contig_id,start,end,strand,aro_id,drug_class,resistance_mechanism
-mexC_genome,acrB,mexC_genome,1000,2000,+,ARO:3000001,fluoroquinolone antibiotic,efflux pump complex or subunit conferring antibiotic resistance
-mexC_genome,acrA,mexC_genome,2500,3500,+,ARO:3000002,fluoroquinolone antibiotic,efflux pump complex or subunit conferring antibiotic resistance
-mexC_genome,tolC,mexC_genome,4000,5000,+,ARO:3000003,fluoroquinolone antibiotic,efflux pump complex or subunit conferring antibiotic resistance
-mexC_genome,acrR,mexC_genome,5500,6500,+,ARO:3000004,fluoroquinolone antibiotic,efflux pump complex or subunit conferring antibiotic resistance
