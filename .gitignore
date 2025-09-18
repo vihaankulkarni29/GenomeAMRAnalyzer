@@ -20,6 +20,10 @@
 /test_output/
 /test_pipeline/
 
+# Docker data directories
+/data_input/
+/data_output/
+
 # Ignore specific log and data files that might be created in the root
 *.log
 *.csv

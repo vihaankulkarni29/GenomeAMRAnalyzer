@@ -1,0 +1,12 @@
+# Task 2: Create docker-compose.yml
+
+version: '3.8'
+services:
+  analyzer:
+    # Build the Docker image from the Dockerfile in the current directory
+    build: .
+    # Define volumes to link local folders to folders inside the container
+    # The user will place their inputs in './data_input' and find results in './data_output'
+    volumes:
+      - ./data_input:/app/data_input
+      - ./data_output:/app/data_output

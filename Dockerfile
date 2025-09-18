@@ -1,61 +1,27 @@
-# GenomeAMRAnalyzer Dockerfile
-# Maintainer: Vihaan (2025) | Built for robust, reproducible AMR analysis
+# Task 1: Create the Dockerfile
 
-# 1. Use official lightweight Ubuntu as base
-FROM ubuntu:22.04
+# Use the official Miniconda3 image as a base
+FROM continuumio/miniconda3
 
-# 2. Set noninteractive mode for apt
-ENV DEBIAN_FRONTEND=noninteractive
-
-# 3. Install system dependencies
-RUN apt-get update && apt-get install -y \
-    wget \
-    git \
-    build-essential \
-    python3 \
-    python3-pip \
-    python3-venv \
-    ca-certificates \
-    libbz2-dev \
-    liblzma-dev \
-    libffi-dev \
-    libssl-dev \
-    zlib1g-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# 4. Create working directory
+# Set the working directory inside the container
 WORKDIR /app
 
-# 5. Copy pipeline code and configs
-COPY . /app
+# Copy the entire project context into the container's working directory
+COPY . .
 
-
-# 6. Install Miniconda (for RGI and bioinformatics tools)
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh && \
-    bash /tmp/miniconda.sh -b -p /opt/conda && \
-    rm /tmp/miniconda.sh && \
-    /opt/conda/bin/conda clean -afy
-
-# 7. Add conda to PATH
-ENV PATH="/opt/conda/bin:$PATH"
-
-# 7.5 Accept Conda Terms of Service for default channels
-RUN conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main && \
-    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
-
-
-# 8. Create and activate pipeline environment, install dependencies from bioconda and conda-forge
-RUN conda create -y -n genomeamr -c conda-forge -c bioconda python=3.10 snakemake biopython rgi && \
+# Configure Conda channels, create the environment, and install RGI
+# This is the key step to solve the installation failures.
+RUN conda config --add channels defaults && \
+    conda config --add channels bioconda && \
+    conda config --add channels conda-forge && \
+    conda config --set channel_priority strict && \
+    conda create -n GenomeAMRAnalyzer_env python=3.9 rgi -y && \
     conda clean -afy
 
-# 9. Activate environment by default
-SHELL ["/bin/bash", "-c"]
-RUN echo "conda activate genomeamr" >> ~/.bashrc
+# Install Python packages from requirements.txt into the created Conda environment
+# Note: We use the specific pip from our new environment to ensure correct installation
+RUN /opt/conda/envs/GenomeAMRAnalyzer_env/bin/pip install --no-cache-dir -r requirements.txt
 
-# 10. Set default command to bash (for interactive use)
-CMD ["bash"]
-
-# 11. Usage notes:
-# - Mount your data with -v /host/data:/app/data
-# - Run pipeline: snakemake --cores 4 --configfile config/snakemake_config.yaml
-# - For RGI: rgi main ...
+# Set the entrypoint to run the main script within the Conda environment
+# This makes the container act like an executable for our pipeline
+ENTRYPOINT ["conda", "run", "-n", "GenomeAMRAnalyzer_env", "python", "genomeamr_auto.py"]

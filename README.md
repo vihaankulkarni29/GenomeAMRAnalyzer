@@ -8,7 +8,34 @@
 
 A comprehensive, enterprise-ready bioinformatics pipeline for analyzing antimicrobial resistance (AMR) mutations in bacterial genomes, with specialized focus on Enteric gram-negative bacteria and RND efflux pump systems.
 
-## 🚀 Quick Start
+> **🐳 NEW: Docker Support!** This pipeline now supports fully containerized execution with Docker, eliminating all local dependency issues and guaranteeing 100% reproducibility. See the "Getting Started (Docker Workflow)" section below.
+
+# 🚀 Getting Started (Docker Workflow)
+
+This project uses Docker to guarantee a reproducible, error-free installation. You no longer need to install Conda or any Python packages on your local machine.
+
+### Prerequisites
+- [Docker](https://www.docker.com/get-started) installed on your system.
+
+### Running the Analysis
+1.  **Prepare Your Inputs:**
+    * Create a directory named `data_input` in the project's root folder.
+    * Place your genome accession list file (e.g., `accessions.txt`) and your gene list file (e.g., `genes.txt`) inside the `data_input` directory.
+
+2.  **Run the Pipeline:**
+    * Open your terminal and execute the runner script:
+        ```bash
+        chmod +x run_docker.sh
+        ./run_docker.sh
+        ```
+    * The script will guide you through the process, ask for your filenames, and start the analysis.
+
+3.  **Get Your Results:**
+    * Upon completion, all output files and reports will be saved in the `data_output` directory.
+
+---
+
+## 🚀 Quick Start (Legacy/Local Installation)
 
 ### 🎯 **For Non-Technical Users (Investigators, Clinicians)**
 ```bash
@@ -240,7 +267,21 @@ GenomeAMRAnalyzer/
 
 ## 🚀 Quick Start
 
-### Installation
+### Docker Installation (Recommended)
+
+The easiest and most reliable way to run GenomeAMRAnalyzer:
+
+```bash
+# Clone the repository
+git clone https://github.com/your-username/GenomeAMRAnalyzer.git
+cd GenomeAMRAnalyzer
+
+# Run with Docker (no local dependencies needed!)
+chmod +x run_docker.sh
+./run_docker.sh
+```
+
+### Local Installation (Advanced Users)
 
 ```bash
 # Clone the repository
