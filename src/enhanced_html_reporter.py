@@ -11,6 +11,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 import pandas as pd
+from jinja2 import Environment, FileSystemLoader, Template
 
 
 class EnhancedHTMLReportGenerator:
@@ -52,6 +53,78 @@ class EnhancedHTMLReportGenerator:
             
         except Exception as e:
             self.logger.error(f"Error generating comprehensive report: {e}")
+            return self._generate_error_report(str(e))
+    
+    def generate_template_based_report(self,
+                                     run_id: str,
+                                     genomes: List[Dict[str, Any]],
+                                     mutations: List[Dict[str, Any]] = None,
+                                     mic_data: List[Dict[str, Any]] = None,
+                                     cooccurrence: List[Dict[str, Any]] = None,
+                                     stats: Dict[str, Any] = None,
+                                     artifact_links: Dict[str, str] = None) -> str:
+        """
+        Generate HTML report using Jinja2 template with interactive Plotly charts
+        
+        Args:
+            run_id: Unique identifier for this analysis run
+            genomes: List of genome information dictionaries
+            mutations: List of mutation data
+            mic_data: List of MIC data
+            cooccurrence: List of co-occurrence analysis data
+            stats: Pipeline statistics
+            artifact_links: Links to analysis artifacts
+            
+        Returns:
+            Path to generated HTML report
+        """
+        try:
+            # Process mutations data for chart generation
+            mutations_data = {}
+            if mutations:
+                for mutation in mutations:
+                    genome_id = mutation.get('genome_id', 'unknown')
+                    if genome_id not in mutations_data:
+                        mutations_data[genome_id] = {'mutations': []}
+                    mutations_data[genome_id]['mutations'].append(mutation)
+            
+            # Generate the Plotly script for mutation frequency chart
+            plotly_script = self.generate_mutation_frequency_plot(mutations_data)
+            
+            # Set up Jinja2 environment
+            template_dir = Path(__file__).parent.parent / "report" / "templates"
+            if not template_dir.exists():
+                raise FileNotFoundError(f"Template directory not found: {template_dir}")
+            
+            env = Environment(loader=FileSystemLoader(str(template_dir)))
+            template = env.get_template("amr_report.html")
+            
+            # Prepare template variables
+            template_vars = {
+                'run_id': run_id,
+                'genomes': genomes or [],
+                'mutations': mutations or [],
+                'mic_data': mic_data or [],
+                'cooccurrence': cooccurrence or [],
+                'stats': stats or {},
+                'artifact_links': artifact_links or {},
+                'plotly_script': plotly_script,
+                'generation_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }
+            
+            # Render the template
+            html_content = template.render(**template_vars)
+            
+            # Save the report
+            report_path = self.output_dir / f"interactive_amr_report_{run_id}.html"
+            with open(report_path, 'w', encoding='utf-8') as f:
+                f.write(html_content)
+            
+            self.logger.info(f"Interactive HTML report generated: {report_path}")
+            return str(report_path)
+            
+        except Exception as e:
+            self.logger.error(f"Error generating template-based report: {e}")
             return self._generate_error_report(str(e))
     
     def _collect_analysis_data(self, manifest: Dict, card_dir: str, genome_dir: str, 
@@ -376,6 +449,107 @@ class EnhancedHTMLReportGenerator:
 </html>
 """
         return html
+    
+    def generate_mutation_frequency_plot(self, mutations_data: Dict[str, Any]) -> str:
+        """
+        Generate interactive Plotly.js bar chart for mutation frequencies
+        
+        Args:
+            mutations_data: Dictionary containing mutation frequency data
+            
+        Returns:
+            JavaScript code string for Plotly chart
+        """
+        try:
+            # Extract mutation frequencies from data
+            mutation_frequencies = {}
+            
+            # Process mutations data to count frequencies
+            for genome_id, mutation_info in mutations_data.items():
+                if isinstance(mutation_info, dict) and 'mutations' in mutation_info:
+                    for mutation in mutation_info['mutations']:
+                        if isinstance(mutation, dict) and 'substitution' in mutation:
+                            substitution = mutation['substitution']
+                            mutation_frequencies[substitution] = mutation_frequencies.get(substitution, 0) + 1
+            
+            # If no mutations, return default chart
+            if not mutation_frequencies:
+                mutations = ['No mutations detected']
+                frequencies = [0]
+            else:
+                # Sort by frequency (descending) and take top 20 for readability
+                sorted_mutations = sorted(mutation_frequencies.items(), key=lambda x: x[1], reverse=True)[:20]
+                mutations = [item[0] for item in sorted_mutations]
+                frequencies = [item[1] for item in sorted_mutations]
+            
+            # Generate JavaScript code for Plotly chart
+            plotly_script = f"""
+            var mutations = {json.dumps(mutations)};
+            var frequencies = {json.dumps(frequencies)};
+            
+            var data = [{{
+                x: mutations,
+                y: frequencies,
+                type: 'bar',
+                marker: {{
+                    color: frequencies.map(function(val, idx) {{
+                        var colors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#34495e'];
+                        return colors[idx % colors.length];
+                    }}),
+                    opacity: 0.8
+                }},
+                text: frequencies.map(function(val) {{ return val.toString(); }}),
+                textposition: 'auto',
+                hovertemplate: '<b>Mutation:</b> %{{x}}<br><b>Frequency:</b> %{{y}}<br><extra></extra>'
+            }}];
+            
+            var layout = {{
+                title: {{
+                    text: 'Top Mutation Frequencies Across Analyzed Genomes',
+                    font: {{ size: 18, color: '#2c3e50' }}
+                }},
+                xaxis: {{
+                    title: 'Mutation',
+                    tickangle: -45,
+                    automargin: true
+                }},
+                yaxis: {{
+                    title: 'Frequency Count',
+                    gridcolor: '#ecf0f1'
+                }},
+                margin: {{
+                    l: 60,
+                    r: 40,
+                    t: 80,
+                    b: 120
+                }},
+                plot_bgcolor: '#ffffff',
+                paper_bgcolor: '#ffffff',
+                showlegend: false
+            }};
+            
+            var config = {{
+                responsive: true,
+                displayModeBar: true,
+                modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d'],
+                displaylogo: false
+            }};
+            
+            Plotly.newPlot('mutationFrequencyChart', data, layout, config);
+            """
+            
+            return plotly_script
+            
+        except Exception as e:
+            self.logger.error(f"Error generating mutation frequency plot: {e}")
+            # Return a simple error message chart
+            return """
+            document.getElementById('mutationFrequencyChart').innerHTML = 
+                '<div style="text-align:center; padding:50px; color:#e74c3c;">' +
+                '<h3>Chart Generation Error</h3>' +
+                '<p>Unable to generate mutation frequency chart. Check log files for details.</p>' +
+                '</div>';
+            """
     
     def _generate_genome_results_table(self, genes_found: Dict[str, List[str]]) -> str:
         """Generate genome results table"""

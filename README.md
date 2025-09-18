@@ -183,7 +183,7 @@ python run_pipeline.py --config custom_config.yaml \
 - 🧬 **CARD Integration** - Latest resistance database
 - � **Statistical Analysis** - Fisher's exact tests, permutation analysis
 - � **Network Analysis** - Co-occurrence patterns and interactions
-- � **Interactive Reports** - Publication-ready visualizations
+- � **Interactive Reports** - Publication-ready visualizations with Plotly.js charts
 
 ### **Production Ready**
 - 🚀 **Scalable** - Handle large genome datasets
@@ -197,7 +197,46 @@ GenomeAMRAnalyzer is a modular bioinformatics pipeline designed to:
 - Extract and analyze protein sequences
 - Detect mutations through sequence alignment
 - Analyze co-occurrence patterns of mutations across gene networks
-- Generate comprehensive HTML reports
+- Generate comprehensive HTML reports with interactive Plotly.js visualizations
+
+## 📊 Interactive Reporting Features
+
+The Enhanced HTML Reporter (`src/enhanced_html_reporter.py`) now includes:
+
+### 🎨 **Interactive Visualizations**
+- **Mutation Frequency Charts**: Interactive Plotly.js bar charts showing mutation distribution across genes
+- **Hover Tooltips**: Detailed information on chart interactions
+- **Responsive Design**: Charts automatically adapt to screen size
+- **Publication Ready**: High-quality vector graphics suitable for research publications
+
+### 📱 **Modern Web Interface**
+- **DataTables Integration**: Sortable, searchable, and paginated data tables
+- **Mobile Responsive**: Optimized viewing on all devices
+- **Professional Styling**: Clean, modern design for academic presentations
+
+### 🔧 **Template-Based Reporting**
+```python
+# Generate interactive reports with Plotly charts
+from enhanced_html_reporter import EnhancedHTMLReportGenerator
+
+reporter = EnhancedHTMLReportGenerator(output_dir)
+report_path = reporter.generate_template_based_report(
+    run_id="analysis_2025",
+    genomes=genome_data,
+    mutations=mutation_data,
+    mic_data=mic_results,
+    cooccurrence=cooccurrence_results,
+    stats=analysis_stats
+)
+# Opens interactive HTML report with mutation frequency charts
+```
+
+### 🎯 **Demo Example**
+Try the interactive reporting demo:
+```bash
+python examples/interactive_report_demo.py
+```
+This generates a sample report showcasing all interactive features with example data.
 
 ## 🌟 Key Features
 
