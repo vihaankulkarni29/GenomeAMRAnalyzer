@@ -66,7 +66,7 @@ python genomeamr_auto.py \
   --genes config/genes_default.txt \
   --email your.name@institution.edu
 ```
-✅ **Automatically installs RGI + CARD database**  
+✅ Automatically uses Abricate with the CARD database (via Docker or Conda)  
 ✅ **No external dependencies required**  
 ✅ **Works on Windows, Mac, Linux**
 
@@ -102,12 +102,12 @@ python genomeamr_auto.py \
 
 ### For Advanced Users
 ```bash
-# Manual control with tool management
+# Manual control with tool management (Abricate-based)
 python run_pipeline.py \
   --url "NCBI_URL" \
   --genes config/genes_default.txt \
   --email user@domain.com \
-  --auto-install        # Auto-install RGI + CARD
+  --auto-install        # Auto-install Abricate + CARD DB (when supported)
   --output-dir results  # Custom output location
 ```
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-URL → Genomes → RGI (CARD) Orchestrator
+URL → Genomes → Abricate (CARD) Orchestrator
 ======================================
 End-to-end pipeline:
   1) Parse NCBI URL, discover genomes
@@ -27,15 +27,17 @@ if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 
 from core.url_to_genomes_workflow import URLToGenomesWorkflow
-from card_runner import CARDRunner, RGIConfig
+from abricate_runner import run_abricate
+from abricate_to_coords import convert_abricate_to_coords
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="Run URL→RGI pipeline")
+    p = argparse.ArgumentParser(description="Run URL→Abricate (CARD) pipeline")
     p.add_argument("--url", required=True, help="NCBI nuccore search URL")
     p.add_argument("--config", default=str(PROJECT_ROOT / "config" / "snakemake_config.yaml"), help="Path to YAML config")
-    p.add_argument("--rgi-exec", default="rgi", help="RGI executable path/name")
-    p.add_argument("--threads", type=int, default=None, help="Override RGI threads")
+    # Kept for compatibility; no longer used, but accepted to avoid breaking scripts
+    p.add_argument("--rgi-exec", default="rgi", help="(Deprecated) RGI executable path/name")
+    p.add_argument("--threads", type=int, default=None, help="(Deprecated) RGI threads")
     return p
 
 
@@ -46,27 +48,45 @@ async def run_url_to_genomes(config_path: str, url: str):
 
 
 def run_rgi_on_files(genome_files: List[str], config_path: str, rgi_exec: str, threads_override: Optional[int] = None) -> bool:
+    """Run Abricate on the discovered genomes and convert outputs to coordinate CSVs.
+
+    Note: Function name kept for backward compatibility with callers.
+    """
     import yaml
+    from pathlib import Path
+    import os
+
     with open(config_path, "r") as f:
         cfg = yaml.safe_load(f)
 
-    output_dir = cfg['directories']['card_results']
-    target_genes = cfg['target_genes']
-    threads = threads_override or cfg.get('rgi', {}).get('threads', 1)
+    # Reuse the existing directory entry in config for outputs
+    base_out = Path(cfg['directories']['card_results']).resolve()
+    coords_dir = base_out
+    abricate_raw = base_out / "abricate_raw"
+    abricate_raw.mkdir(parents=True, exist_ok=True)
+    coords_dir.mkdir(parents=True, exist_ok=True)
 
-    rgi_cfg = RGIConfig(
-        input_dir=str(Path(genome_files[0]).parent),
-        output_dir=output_dir,
-        target_genes=target_genes,
-        rgi_executable=rgi_exec,
-        num_threads=threads,
-    )
+    if not genome_files:
+        return False
 
-    runner = CARDRunner(rgi_cfg)
+    input_dir = str(Path(genome_files[0]).parent)
 
-    # Ensure only the discovered files are processed by creating a temp dir
-    # pointing to the same directory is okay since CARDRunner scans *.fasta
-    return runner.run_analysis()
+    # Step 1: Run Abricate on input directory
+    tsv_reports = run_abricate(input_dir, str(abricate_raw), db='card')
+
+    # Step 2: Convert each TSV to legacy coordinate CSV
+    generated = 0
+    for tsv in tsv_reports:
+        tsv_path = Path(tsv)
+        genome_id = tsv_path.stem
+        if genome_id.endswith('_abricate'):
+            genome_id = genome_id[:-len('_abricate')]
+        out_csv = coords_dir / f"{genome_id}_coordinates.csv"
+        rows = convert_abricate_to_coords(tsv_path, out_csv)
+        if rows >= 0:
+            generated += 1
+
+    return generated > 0
 
 
 def main():
@@ -80,16 +100,16 @@ def main():
     workflow, files, report = asyncio.run(run_url_to_genomes(args.config, args.url))
     logging.info(f"Discovered and downloaded {len(files)} genomes")
     
-    # Validate for RGI
+    # Validate for Abricate
     if not workflow.validate_for_rgi_processing():
-        logging.warning("Some genomes may not be ideal for RGI; continuing anyway")
+        logging.warning("Some genomes may not be ideal for CARD scanning; continuing anyway")
 
-    # Run RGI
+    # Run Abricate → Coordinates
     ok = run_rgi_on_files(files, args.config, args.rgi_exec, args.threads)
     if not ok:
         sys.exit(1)
 
-    logging.info("URL→RGI pipeline completed. CARD results ready.")
+    logging.info("URL→Abricate pipeline completed. CARD-based coordinates ready.")
 
 
 if __name__ == "__main__":

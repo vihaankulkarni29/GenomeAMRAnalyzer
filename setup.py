@@ -99,7 +99,7 @@ setup(
         "console_scripts": [
             "genomeamr=run_pipeline:main",
             "genomeamr-download=src.simple_genome_downloader:main",
-            "genomeamr-card=src.card_runner:main",
+            # RGI-based card runner removed; Abricate flow is handled via run_pipeline and url_to_card_pipeline
             "genomeamr-extract=src.fasta_aa_extractor_integration:main",
             "genomeamr-align=src.production_wildtype_aligner:main",
             "genomeamr-subscan=src.production_subscan_analyzer:main",

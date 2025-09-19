@@ -242,33 +242,55 @@ def main() -> int:
     else:
         print("[STEP 1] Skipping genome download")
 
-    # 2) CARD RGI step - check for actual genome files
-    print(f"[STEP 2] Running CARD analysis for {len(target_genes)} genes")
+    # 2) CARD gene detection via Abricate - check for actual genome files
+    print(f"[STEP 2] Running CARD analysis via Abricate")
     actual_genome_dir = genomes_dir / "fasta"  # Downloader creates fasta subdirectory
     if actual_genome_dir.exists():
         genome_input_dir = actual_genome_dir
     else:
         genome_input_dir = genomes_dir
     
+    # Run Abricate on genomes to produce raw TSVs in card_dir/abricate_raw
+    abricate_raw = card_dir / "abricate_raw"
+    abricate_raw.mkdir(parents=True, exist_ok=True)
     rc = run_cmd([
-        py, str(project / "src" / "card_runner.py"),
+        py, "-m", "src.abricate_runner",
         "--input-dir", str(genome_input_dir),
-        "--output-dir", str(card_dir),
-        "--genes", *target_genes,
+        "--output-dir", str(abricate_raw),
     ], cwd=project)
     if rc != 0:
-        print("CARDRunner failed; aborting.")
+        print("Abricate run failed; aborting.")
         return rc
 
-    # Pick first coordinates file to feed extractor if multiple
+    # Convert each *_abricate.tsv to *_coordinates.csv in card_dir/coordinates
     coords_dir = card_dir / "coordinates"
-    coord_files = list(coords_dir.glob("*_card.csv"))
+    coords_dir.mkdir(parents=True, exist_ok=True)
+    tsv_reports = list(abricate_raw.glob("*_abricate.tsv"))
+    if not tsv_reports:
+        print(f"No Abricate TSV reports found in {abricate_raw}")
+        return 2
+    for tsv in tsv_reports:
+        genome_id = tsv.stem
+        if genome_id.endswith("_abricate"):
+            genome_id = genome_id[:-len("_abricate")]
+        out_csv = coords_dir / f"{genome_id}_coordinates.csv"
+        rc = run_cmd([
+            py, "-m", "src.abricate_to_coords",
+            "--in-tsv", str(tsv),
+            "--out-csv", str(out_csv)
+        ], cwd=project)
+        if rc != 0:
+            print(f"Adapter failed for {tsv}")
+            return rc
+
+    # Pick first coordinates file to feed extractor if multiple
+    coord_files = list(coords_dir.glob("*_coordinates.csv"))
     if not coord_files:
         print(f"No coordinate CSVs found in {coords_dir}")
         return 2
     # Use all in a loop, but extractor accepts one file at a time; run per-file
     for coord_file in coord_files:
-        out_dir = proteins_dir / coord_file.stem.replace("_card", "")
+        out_dir = proteins_dir / coord_file.stem.replace("_coordinates", "")
         out_dir.mkdir(exist_ok=True)
         rc = run_cmd([
             py, str(project / "src" / "fasta_aa_extractor_integration.py"),

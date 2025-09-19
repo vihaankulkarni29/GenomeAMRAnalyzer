@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 """
 Enhanced HTML Report Generator for GenomeAMRAnalyzer
-Creates comprehensive, user-friendly HTML reports with detailed analysis results
+Creates comprehensive, user-friendly HTML reports with multi-database analysis results
+
+Enhanced with comprehensive genomic context:
+- CARD antimicrobial resistance analysis  
+- VFDB virulence factor profiling
+- PlasmidFinder plasmid identification
+- Integrated genomic context reporting with fail-safe handling
 """
 
 import os
@@ -27,17 +33,20 @@ class EnhancedHTMLReportGenerator:
                                     card_results_dir: str,
                                     genome_data_dir: str,
                                     proteins_dir: str,
-                                    mutations_dir: str = None) -> str:
-        """Generate comprehensive HTML report with all analysis details"""
+                                    mutations_dir: Optional[str] = None,
+                                    vfdb_results_dir: Optional[str] = None,
+                                    plasmidfinder_results_dir: Optional[str] = None) -> str:
+        """Generate comprehensive HTML report with multi-database analysis details"""
         
         try:
             # Load manifest data
             with open(manifest_path, 'r') as f:
                 manifest = json.load(f)
             
-            # Collect all data
+            # Collect all data including multi-database results
             report_data = self._collect_analysis_data(
-                manifest, card_results_dir, genome_data_dir, proteins_dir, mutations_dir
+                manifest, card_results_dir, genome_data_dir, proteins_dir, mutations_dir,
+                vfdb_results_dir, plasmidfinder_results_dir
             )
             
             # Generate HTML
@@ -58,11 +67,11 @@ class EnhancedHTMLReportGenerator:
     def generate_template_based_report(self,
                                      run_id: str,
                                      genomes: List[Dict[str, Any]],
-                                     mutations: List[Dict[str, Any]] = None,
-                                     mic_data: List[Dict[str, Any]] = None,
-                                     cooccurrence: List[Dict[str, Any]] = None,
-                                     stats: Dict[str, Any] = None,
-                                     artifact_links: Dict[str, str] = None) -> str:
+                                     mutations: Optional[List[Dict[str, Any]]] = None,
+                                     mic_data: Optional[List[Dict[str, Any]]] = None,
+                                     cooccurrence: Optional[List[Dict[str, Any]]] = None,
+                                     stats: Optional[Dict[str, Any]] = None,
+                                     artifact_links: Optional[Dict[str, str]] = None) -> str:
         """
         Generate HTML report using Jinja2 template with interactive Plotly charts
         
@@ -128,8 +137,10 @@ class EnhancedHTMLReportGenerator:
             return self._generate_error_report(str(e))
     
     def _collect_analysis_data(self, manifest: Dict, card_dir: str, genome_dir: str, 
-                              proteins_dir: str, mutations_dir: str) -> Dict[str, Any]:
-        """Collect all analysis data for comprehensive reporting"""
+                              proteins_dir: str, mutations_dir: Optional[str],
+                              vfdb_dir: Optional[str] = None, 
+                              plasmidfinder_dir: Optional[str] = None) -> Dict[str, Any]:
+        """Collect all analysis data for comprehensive multi-database reporting"""
         
         data = {
             'pipeline_info': manifest,
@@ -138,6 +149,9 @@ class EnhancedHTMLReportGenerator:
             'genes_missing': {},
             'protein_extraction': {},
             'mutations': {},
+            'virulence_factors': {},
+            'plasmids': {},
+            'genomic_context': {},
             'summary_stats': {}
         }
         
@@ -168,10 +182,10 @@ class EnhancedHTMLReportGenerator:
             # Analyze protein extraction
             proteins_path = Path(proteins_dir)
             if proteins_path.exists():
-                for genome_dir in proteins_path.iterdir():
-                    if genome_dir.is_dir():
-                        protein_files = list(genome_dir.glob("*.faa"))
-                        data['protein_extraction'][genome_dir.name] = {
+                for protein_genome_dir in proteins_path.iterdir():
+                    if protein_genome_dir.is_dir():
+                        protein_files = list(protein_genome_dir.glob("*.faa"))
+                        data['protein_extraction'][protein_genome_dir.name] = {
                             'files_generated': len(protein_files),
                             'files': [f.name for f in protein_files]
                         }
@@ -190,20 +204,194 @@ class EnhancedHTMLReportGenerator:
                     except Exception as e:
                         self.logger.warning(f"Error reading mutations {mut_file}: {e}")
             
+            # Analyze VFDB virulence factors if available
+            if vfdb_dir:
+                self.logger.info("Parsing VFDB virulence factor results")
+                data['virulence_factors'] = self.parse_vf_results(vfdb_dir)
+            
+            # Analyze PlasmidFinder results if available  
+            if plasmidfinder_dir:
+                self.logger.info("Parsing PlasmidFinder plasmid results")
+                data['plasmids'] = self.parse_plasmid_results(plasmidfinder_dir)
+            
+            # Create integrated genomic context per genome
+            all_genomes = set(data['genomes_analyzed'])
+            for genome_id in all_genomes:
+                context = {
+                    'amr_genes': data['genes_found'].get(genome_id, []),
+                    'virulence_factors': data['virulence_factors'].get(genome_id, {}),
+                    'plasmids': data['plasmids'].get(genome_id, {}),
+                    'mutations': data['mutations'].get(genome_id, {}),
+                    'proteins': data['protein_extraction'].get(genome_id, {})
+                }
+                data['genomic_context'][genome_id] = context
+            
+            # Update summary statistics with multi-database info
+            data['summary_stats'].update({
+                'genomes_with_vf': len([g for g in data['virulence_factors'] if data['virulence_factors'][g].get('total_factors', 0) > 0]),
+                'genomes_with_plasmids': len([g for g in data['plasmids'] if data['plasmids'][g].get('total_plasmids', 0) > 0]),
+                'total_virulence_factors': sum(vf.get('total_factors', 0) for vf in data['virulence_factors'].values()),
+                'total_plasmids': sum(p.get('total_plasmids', 0) for p in data['plasmids'].values())
+            })
+            
             return data
             
         except Exception as e:
             self.logger.error(f"Error collecting analysis data: {e}")
             return data
     
+    def parse_vf_results(self, vfdb_dir: str) -> Dict[str, Any]:
+        """Parse VFDB virulence factor results with fail-safe handling
+        
+        Args:
+            vfdb_dir: Directory containing VFDB TSV results
+            
+        Returns:
+            Dictionary with virulence factor data per genome
+        """
+        vf_data = {}
+        
+        try:
+            vfdb_path = Path(vfdb_dir)
+            if not vfdb_path.exists():
+                self.logger.warning(f"VFDB directory not found: {vfdb_dir}")
+                return vf_data
+                
+            # Look for VFDB TSV files with dynamic naming
+            tsv_files = list(vfdb_path.glob("*_vfdb.tsv"))
+            
+            for tsv_file in tsv_files:
+                try:
+                    # Extract genome ID from filename
+                    genome_id = tsv_file.stem.replace('_vfdb', '')
+                    
+                    # Parse TSV file
+                    df = pd.read_csv(tsv_file, sep='\t')
+                    
+                    if len(df) > 0:
+                        # Extract virulence factor information
+                        virulence_factors = []
+                        for _, row in df.iterrows():
+                            vf_info = {
+                                'gene': row.get('GENE', 'Unknown'),
+                                'product': row.get('PRODUCT', 'Unknown product'),
+                                'coverage': row.get('%COVERAGE', 0),
+                                'identity': row.get('%IDENTITY', 0),
+                                'length': row.get('LENGTH', 0),
+                                'database': row.get('DATABASE', 'VFDB')
+                            }
+                            virulence_factors.append(vf_info)
+                        
+                        vf_data[genome_id] = {
+                            'total_factors': len(virulence_factors),
+                            'factors': virulence_factors,
+                            'high_confidence': [vf for vf in virulence_factors if vf['coverage'] >= 80 and vf['identity'] >= 90]
+                        }
+                    else:
+                        vf_data[genome_id] = {
+                            'total_factors': 0,
+                            'factors': [],
+                            'high_confidence': []
+                        }
+                        
+                except Exception as e:
+                    self.logger.warning(f"Error parsing VFDB file {tsv_file}: {e}")
+                    vf_data[genome_id] = {
+                        'total_factors': 0,
+                        'factors': [],
+                        'high_confidence': [],
+                        'error': str(e)
+                    }
+            
+            self.logger.info(f"Parsed VFDB results for {len(vf_data)} genomes")
+            return vf_data
+            
+        except Exception as e:
+            self.logger.error(f"Error parsing VFDB results: {e}")
+            return vf_data
+    
+    def parse_plasmid_results(self, plasmidfinder_dir: str) -> Dict[str, Any]:
+        """Parse PlasmidFinder results with fail-safe handling
+        
+        Args:
+            plasmidfinder_dir: Directory containing PlasmidFinder TSV results
+            
+        Returns:
+            Dictionary with plasmid data per genome
+        """
+        plasmid_data = {}
+        
+        try:
+            plasmid_path = Path(plasmidfinder_dir)
+            if not plasmid_path.exists():
+                self.logger.warning(f"PlasmidFinder directory not found: {plasmidfinder_dir}")
+                return plasmid_data
+                
+            # Look for PlasmidFinder TSV files with dynamic naming
+            tsv_files = list(plasmid_path.glob("*_plasmidfinder.tsv"))
+            
+            for tsv_file in tsv_files:
+                try:
+                    # Extract genome ID from filename
+                    genome_id = tsv_file.stem.replace('_plasmidfinder', '')
+                    
+                    # Parse TSV file
+                    df = pd.read_csv(tsv_file, sep='\t')
+                    
+                    if len(df) > 0:
+                        # Extract plasmid information
+                        plasmids = []
+                        for _, row in df.iterrows():
+                            plasmid_info = {
+                                'plasmid': row.get('GENE', 'Unknown'),
+                                'accession': row.get('ACCESSION', 'Unknown'),
+                                'coverage': row.get('%COVERAGE', 0),
+                                'identity': row.get('%IDENTITY', 0),
+                                'length': row.get('LENGTH', 0),
+                                'database': row.get('DATABASE', 'PlasmidFinder')
+                            }
+                            plasmids.append(plasmid_info)
+                        
+                        plasmid_data[genome_id] = {
+                            'total_plasmids': len(plasmids),
+                            'plasmids': plasmids,
+                            'high_confidence': [p for p in plasmids if p['coverage'] >= 80 and p['identity'] >= 90]
+                        }
+                    else:
+                        plasmid_data[genome_id] = {
+                            'total_plasmids': 0,
+                            'plasmids': [],
+                            'high_confidence': []
+                        }
+                        
+                except Exception as e:
+                    self.logger.warning(f"Error parsing PlasmidFinder file {tsv_file}: {e}")
+                    plasmid_data[genome_id] = {
+                        'total_plasmids': 0,
+                        'plasmids': [],
+                        'high_confidence': [],
+                        'error': str(e)
+                    }
+            
+            self.logger.info(f"Parsed PlasmidFinder results for {len(plasmid_data)} genomes")
+            return plasmid_data
+            
+        except Exception as e:
+            self.logger.error(f"Error parsing PlasmidFinder results: {e}")
+            return plasmid_data
+    
     def _generate_html_content(self, data: Dict[str, Any]) -> str:
-        """Generate comprehensive HTML content"""
+        """Generate comprehensive HTML content with multi-database genomic context"""
         
         pipeline_info = data.get('pipeline_info', {})
         genomes = data.get('genomes_analyzed', [])
         genes_found = data.get('genes_found', {})
         protein_extraction = data.get('protein_extraction', {})
         mutations = data.get('mutations', {})
+        virulence_factors = data.get('virulence_factors', {})
+        plasmids = data.get('plasmids', {})
+        genomic_context = data.get('genomic_context', {})
+        summary_stats = data.get('summary_stats', {})
         
         html = f"""
 <!DOCTYPE html>
@@ -362,7 +550,15 @@ class EnhancedHTMLReportGenerator:
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">{sum(len(genes) for genes in genes_found.values())}</div>
-                    <div class="stat-label">Total Genes Found</div>
+                    <div class="stat-label">AMR Genes Found</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{summary_stats.get('total_virulence_factors', 0)}</div>
+                    <div class="stat-label">Virulence Factors</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{summary_stats.get('total_plasmids', 0)}</div>
+                    <div class="stat-label">Plasmids Detected</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">{len(protein_extraction)}</div>
@@ -404,6 +600,11 @@ class EnhancedHTMLReportGenerator:
         <div class="section">
             <h2>🦠 Genome Analysis Results</h2>
             {self._generate_genome_results_table(genes_found)}
+        </div>
+
+        <div class="section">
+            <h2>🌍 Genomic Context Analysis</h2>
+            {self._generate_genomic_context_section(genomic_context, virulence_factors, plasmids)}
         </div>
 
         <div class="section">
@@ -564,6 +765,184 @@ class EnhancedHTMLReportGenerator:
             html += f'<tr><td>{genome_id}</td><td><div class="gene-list">{gene_tags}</div></td><td>{status}</td></tr>'
         
         html += '</tbody></table>'
+        return html
+    
+    def _generate_genomic_context_section(self, genomic_context: Dict[str, Any], 
+                                         virulence_factors: Dict[str, Any], 
+                                         plasmids: Dict[str, Any]) -> str:
+        """Generate comprehensive genomic context section with multi-database results"""
+        
+        if not genomic_context and not virulence_factors and not plasmids:
+            return """
+            <div class="alert alert-warning">
+                <strong>No Multi-Database Results:</strong> No VFDB or PlasmidFinder results available. 
+                Only CARD antimicrobial resistance analysis was performed.
+            </div>
+            """
+        
+        html = """
+        <div class="alert alert-success">
+            <strong>Comprehensive Genomic Profiling:</strong> Results from multiple databases provide 
+            complete genomic context including antimicrobial resistance, virulence factors, and plasmid content.
+        </div>
+        """
+        
+        # Multi-database summary statistics
+        total_genomes = len(genomic_context)
+        genomes_with_vf = len([g for g in virulence_factors if virulence_factors[g].get('total_factors', 0) > 0])
+        genomes_with_plasmids = len([g for g in plasmids if plasmids[g].get('total_plasmids', 0) > 0])
+        
+        html += f"""
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{genomes_with_vf}</div>
+                <div class="stat-label">Genomes with Virulence Factors</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{genomes_with_plasmids}</div>
+                <div class="stat-label">Genomes with Plasmids</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{total_genomes - max(genomes_with_vf, genomes_with_plasmids)}</div>
+                <div class="stat-label">AMR-Only Genomes</div>
+            </div>
+        </div>
+        """
+        
+        # Per-genome detailed context table
+        html += """
+        <h3>📋 Per-Genome Genomic Context</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Genome ID</th>
+                    <th>AMR Genes</th>
+                    <th>Virulence Factors</th>
+                    <th>Plasmids</th>
+                    <th>Risk Profile</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+        
+        for genome_id, context in genomic_context.items():
+            amr_genes = context.get('amr_genes', [])
+            vf_data = context.get('virulence_factors', {})
+            plasmid_data = context.get('plasmids', {})
+            
+            # Format AMR genes
+            amr_display = f"{len(amr_genes)} genes" if amr_genes else "None detected"
+            
+            # Format virulence factors with high-confidence count
+            vf_total = vf_data.get('total_factors', 0)
+            vf_high_conf = len(vf_data.get('high_confidence', []))
+            vf_display = f"{vf_total} factors ({vf_high_conf} high-conf)" if vf_total > 0 else "None detected"
+            
+            # Format plasmids with high-confidence count
+            plasmid_total = plasmid_data.get('total_plasmids', 0)
+            plasmid_high_conf = len(plasmid_data.get('high_confidence', []))
+            plasmid_display = f"{plasmid_total} plasmids ({plasmid_high_conf} high-conf)" if plasmid_total > 0 else "None detected"
+            
+            # Calculate risk profile
+            risk_factors = []
+            if len(amr_genes) > 5:
+                risk_factors.append("High AMR")
+            elif len(amr_genes) > 0:
+                risk_factors.append("AMR+")
+            
+            if vf_high_conf > 3:
+                risk_factors.append("High Virulence")
+            elif vf_total > 0:
+                risk_factors.append("Virulent")
+                
+            if plasmid_high_conf > 0:
+                risk_factors.append("Mobile Elements")
+            
+            risk_profile = ", ".join(risk_factors) if risk_factors else "Low Risk"
+            risk_class = "alert-error" if len(risk_factors) >= 2 else "alert-warning" if risk_factors else "alert-success"
+            
+            html += f"""
+            <tr>
+                <td><strong>{genome_id}</strong></td>
+                <td>{amr_display}</td>
+                <td>{vf_display}</td>
+                <td>{plasmid_display}</td>
+                <td><span class="alert {risk_class}" style="padding: 5px 10px; border-radius: 3px; font-size: 0.9em;">{risk_profile}</span></td>
+            </tr>
+            """
+        
+        html += """
+            </tbody>
+        </table>
+        """
+        
+        # Database-specific details sections
+        if virulence_factors:
+            html += self._generate_virulence_factors_detail(virulence_factors)
+        
+        if plasmids:
+            html += self._generate_plasmids_detail(plasmids)
+        
+        return html
+    
+    def _generate_virulence_factors_detail(self, virulence_factors: Dict[str, Any]) -> str:
+        """Generate detailed virulence factors section"""
+        html = """
+        <h3>🦠 Virulence Factors Detail (VFDB)</h3>
+        <div style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
+        """
+        
+        for genome_id, vf_data in virulence_factors.items():
+            if vf_data.get('total_factors', 0) > 0:
+                html += f"<h4>{genome_id}</h4>"
+                factors = vf_data.get('factors', [])
+                
+                for factor in factors[:5]:  # Show top 5 factors
+                    coverage = factor.get('coverage', 0)
+                    identity = factor.get('identity', 0)
+                    confidence = "High" if coverage >= 80 and identity >= 90 else "Medium" if coverage >= 60 and identity >= 80 else "Low"
+                    
+                    html += f"""
+                    <div style="margin: 5px 0; padding: 5px; background: #f8f9fa; border-left: 3px solid #3498db;">
+                        <strong>{factor.get('gene', 'Unknown')}</strong> - {factor.get('product', 'Unknown product')}<br>
+                        <small>Coverage: {coverage:.1f}%, Identity: {identity:.1f}%, Confidence: {confidence}</small>
+                    </div>
+                    """
+                
+                if len(factors) > 5:
+                    html += f"<p><em>... and {len(factors) - 5} more virulence factors</em></p>"
+        
+        html += "</div>"
+        return html
+    
+    def _generate_plasmids_detail(self, plasmids: Dict[str, Any]) -> str:
+        """Generate detailed plasmids section"""
+        html = """
+        <h3>🧬 Plasmids Detail (PlasmidFinder)</h3>
+        <div style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
+        """
+        
+        for genome_id, plasmid_data in plasmids.items():
+            if plasmid_data.get('total_plasmids', 0) > 0:
+                html += f"<h4>{genome_id}</h4>"
+                plasmid_list = plasmid_data.get('plasmids', [])
+                
+                for plasmid in plasmid_list[:5]:  # Show top 5 plasmids
+                    coverage = plasmid.get('coverage', 0)
+                    identity = plasmid.get('identity', 0)
+                    confidence = "High" if coverage >= 80 and identity >= 90 else "Medium" if coverage >= 60 and identity >= 80 else "Low"
+                    
+                    html += f"""
+                    <div style="margin: 5px 0; padding: 5px; background: #f8f9fa; border-left: 3px solid #e67e22;">
+                        <strong>{plasmid.get('plasmid', 'Unknown')}</strong> - {plasmid.get('accession', 'No accession')}<br>
+                        <small>Coverage: {coverage:.1f}%, Identity: {identity:.1f}%, Confidence: {confidence}</small>
+                    </div>
+                    """
+                
+                if len(plasmid_list) > 5:
+                    html += f"<p><em>... and {len(plasmid_list) - 5} more plasmids</em></p>"
+        
+        html += "</div>"
         return html
     
     def _generate_protein_results_table(self, protein_extraction: Dict[str, Any]) -> str:

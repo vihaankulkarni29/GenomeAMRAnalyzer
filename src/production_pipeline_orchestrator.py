@@ -29,14 +29,15 @@ import yaml
 # Import our production components
 sys.path.append(str(Path(__file__).parent))
 from core.url_to_genomes_workflow import URLToGenomesWorkflow
-from core.genome_downloader import GenomeDownloadEngine
-from card_runner import CARDRunner, RGIConfig
+from core.genome_downloader import GenomeDownloader
+from abricate_runner import run_abricate, ScanResults
+from abricate_to_coords import convert_abricate_to_coords
 from production_fasta_extractor import ProductionFastaExtractor
 
 
 @dataclass
 class PipelineManifest:
-    """Complete pipeline manifest with full traceability"""
+    """Complete pipeline manifest with multi-database traceability"""
     pipeline_version: str
     generated_timestamp: str
     pipeline_id: str
@@ -47,6 +48,12 @@ class PipelineManifest:
     total_genomes_downloaded: int
     total_genomes_rgi_analyzed: int
     total_proteins_extracted: int
+    
+    # Multi-database tracking
+    database_scan_results: Dict[str, Dict[str, Any]]  # database -> scan summary
+    card_success_rate: float  # Critical database
+    vfdb_success_rate: float  # Secondary database
+    plasmidfinder_success_rate: float  # Secondary database
     
     # Processing statistics
     download_success_rate: float
@@ -84,10 +91,13 @@ class ProductionPipelineOrchestrator:
         self.config = pipeline_config
         self.pipeline_id = f"pipeline_{int(time.time())}"
         
-        # Create structured output directories
+        # Create structured output directories with multi-database support
         self.directories = {
             'genomes': self.output_base_dir / "genomes",
             'coordinates': self.output_base_dir / "coordinates", 
+            'abricate_card': self.output_base_dir / "abricate_card",
+            'abricate_vfdb': self.output_base_dir / "abricate_vfdb", 
+            'abricate_plasmidfinder': self.output_base_dir / "abricate_plasmidfinder",
             'proteins': self.output_base_dir / "proteins",
             'manifests': self.output_base_dir / "manifests",
             'logs': self.output_base_dir / "logs",
@@ -100,10 +110,11 @@ class ProductionPipelineOrchestrator:
         # Setup logging
         self._setup_logging()
         
-        # Initialize tracking
+        # Initialize tracking with multi-database support
         self.accession_registry: Dict[str, Dict[str, Any]] = {}
         self.processing_status: Dict[str, str] = {}  # accession -> status
         self.failure_registry: Dict[str, str] = {}  # accession -> failure reason
+        self.database_results: Dict[str, ScanResults] = {}  # database -> scan results
         
         # Performance metrics
         self.performance_metrics = {
@@ -157,11 +168,11 @@ class ProductionPipelineOrchestrator:
             if not genome_results:
                 raise RuntimeError("No genomes successfully downloaded")
             
-            # Stage 2: CARD RGI Analysis
+            # Stage 2: Multi-Database Genomic Profiling
             stage_start = time.time()
-            self.logger.info("=== STAGE 2: CARD RGI Analysis ===")
+            self.logger.info("=== STAGE 2: Multi-Database Genomic Profiling ===")
             
-            rgi_results = await self._execute_rgi_analysis(target_genes)
+            rgi_results = await self._execute_multi_database_analysis(target_genes)
             
             self.performance_metrics['stage_times']['rgi_analysis'] = time.time() - stage_start
             
@@ -197,95 +208,200 @@ class ProductionPipelineOrchestrator:
             raise
     
     async def _execute_genome_discovery_and_download(self, source_url: str) -> Dict[str, Any]:
-        """Execute genome discovery and download with accession tracking"""
+        """Execute genome discovery and download with accession tracking.
+
+        This builds a temporary YAML config file for URLToGenomesWorkflow,
+        then registers downloaded genomes into the accession registry.
+        """
         
         try:
-            # Initialize URL workflow
-            workflow = URLToGenomesWorkflow(
-                output_dir=str(self.directories['genomes']),
-                email=self.config.get('email', 'pipeline@example.com'),
-                api_key=self.config.get('api_key'),
-                max_concurrent=self.config.get('max_concurrent_downloads', 10)
-            )
-            
-            # Execute workflow
-            results = await workflow.run_complete_workflow(source_url)
-            
-            # Register accessions from download results
-            for accession, result in results.items():
-                self.accession_registry[accession] = {
-                    'genome_file': result.file_path if result.success else None,
-                    'organism': getattr(result, 'organism', ''),
-                    'genome_length': getattr(result, 'genome_length', 0),
-                    'download_timestamp': getattr(result, 'download_timestamp', ''),
-                    'file_checksum': getattr(result, 'file_checksum', ''),
-                    'download_success': result.success
+            # Build a temporary config file for the URLToGenomesWorkflow
+            import yaml as _yaml
+            tmp_cfg_path = self.directories['manifests'] / f"{self.pipeline_id}_url_to_genomes.yaml"
+            tmp_cfg = {
+                'directories': {
+                    'genomes': str(self.directories['genomes']),
+                    'logs': str(self.directories['logs']),
+                },
+                'ncbi_email': self.config.get('email', 'pipeline@example.com'),
+                'ncbi_api_key': self.config.get('api_key'),
+                'ncbi_search': {
+                    'max_genomes': self.config.get('ncbi_search', {}).get('max_genomes', 100),
+                    'retry_attempts': self.config.get('ncbi_search', {}).get('retry_attempts', 3),
+                    'timeout_seconds': self.config.get('ncbi_search', {}).get('timeout_seconds', 60),
                 }
-                
-                if result.success:
-                    self.processing_status[accession] = 'genome_downloaded'
-                else:
-                    self.processing_status[accession] = 'genome_download_failed'
-                    self.failure_registry[accession] = result.error_message or 'Unknown download error'
+            }
+            with open(tmp_cfg_path, 'w') as _f:
+                _yaml.safe_dump(tmp_cfg, _f)
+
+            # Initialize URL workflow
+            workflow = URLToGenomesWorkflow(str(tmp_cfg_path))
             
-            successful_downloads = len([r for r in results.values() if r.success])
-            self.logger.info(f"Downloaded {successful_downloads}/{len(results)} genomes successfully")
+            # Execute workflow: returns (list_of_files, report)
+            files, report = await workflow.run_complete_workflow(source_url)
             
-            return results
+            # Register accessions from downloaded files
+            for file_path in files:
+                fp = Path(file_path)
+                genome_id = fp.stem
+                self.accession_registry[genome_id] = {
+                    'genome_file': str(fp),
+                    'organism': '',
+                    'genome_length': 0,
+                    'download_timestamp': '',
+                    'file_checksum': '',
+                    'download_success': True
+                }
+                self.processing_status[genome_id] = 'genome_downloaded'
+            
+            self.logger.info(f"Downloaded {len(files)} genomes successfully")
+            
+            return {
+                'files': files,
+                'report': report,
+            }
             
         except Exception as e:
             self.logger.error(f"Genome discovery/download failed: {e}")
             raise
     
-    async def _execute_rgi_analysis(self, target_genes: List[str]) -> Dict[str, Any]:
-        """Execute CARD RGI analysis on downloaded genomes"""
+    async def _execute_multi_database_analysis(self, target_genes: List[str]) -> Dict[str, Any]:
+        """Execute comprehensive multi-database genomic profiling with failure-proof design.
+        
+        Scans genomes against CARD (critical), VFDB (virulence factors), and PlasmidFinder (plasmids).
+        CARD failures are critical and stop the pipeline. Secondary database failures generate warnings only.
+        """
         
         try:
-            # Setup RGI configuration
-            rgi_config = RGIConfig(
-                input_dir=str(self.directories['genomes']),
-                output_dir=str(self.directories['coordinates']),
-                target_genes=target_genes,
-                num_threads=self.config.get('rgi_threads', 4)
-            )
+            genomes_dir = str(self.directories['genomes'])
+            coords_dir = self.directories['coordinates']
             
-            # Initialize CARD runner
-            card_runner = CARDRunner(rgi_config)
+            # Define databases to scan with criticality levels
+            databases_to_scan = [
+                {'name': 'card', 'critical': True, 'description': 'CARD AMR Database'},
+                {'name': 'vfdb', 'critical': False, 'description': 'VFDB Virulence Factors'},
+                {'name': 'plasmidfinder', 'critical': False, 'description': 'PlasmidFinder Database'}
+            ]
             
-            # Execute RGI analysis
-            success = card_runner.run()
+            self.logger.info(f"Starting multi-database scanning across {len(databases_to_scan)} databases")
             
-            if not success:
-                raise RuntimeError("CARD RGI analysis failed")
+            # Track overall processing results
+            processed_accessions: List[str] = []
+            failed_accessions: List[str] = []
+            coord_manifest: Dict[str, str] = {}
             
-            # Update accession tracking with RGI results
-            for accession in self.accession_registry:
-                if accession in card_runner.processed_accessions:
-                    self.processing_status[accession] = 'rgi_analyzed'
+            # Scan each database
+            for db_config in databases_to_scan:
+                db_name = db_config['name']
+                is_critical = db_config['critical']
+                description = db_config['description']
+                
+                self.logger.info(f"Scanning {description} ({'CRITICAL' if is_critical else 'SECONDARY'})")
+                
+                try:
+                    # Get database-specific output directory
+                    abricate_out = str(self.directories[f'abricate_{db_name}'])
                     
-                    # Get coordinate count
-                    if accession in card_runner.coordinate_cache:
-                        coord_count = len(card_runner.coordinate_cache[accession])
-                        self.accession_registry[accession]['rgi_coordinates_found'] = coord_count
-                        self.accession_registry[accession]['coordinate_file'] = str(
-                            card_runner._create_accession_output_path(accession, "coordinates")
-                        )
-                elif accession in card_runner.failed_accessions:
-                    self.processing_status[accession] = 'rgi_failed'
-                    self.failure_registry[accession] = 'RGI analysis failed'
+                    # Run abricate for this database
+                    scan_results = run_abricate(genomes_dir, abricate_out, db=db_name)
+                    
+                    # Store scan results for reporting
+                    self.database_results[db_name] = scan_results
+                    
+                    # Log scan summary
+                    total_genomes = scan_results.total_genomes
+                    successful = len(scan_results.successful_scans)
+                    failed = len(scan_results.failed_genomes)
+                    no_hits = len(scan_results.no_hits_genomes)
+                    
+                    self.logger.info(
+                        f"{description}: {successful} hits, {no_hits} no hits, {failed} failed "
+                        f"({total_genomes} total genomes)"
+                    )
+                    
+                    # Handle critical database failures
+                    if is_critical and scan_results.global_error:
+                        error_msg = f"CRITICAL: {description} scan failed: {scan_results.global_error}"
+                        self.logger.error(error_msg)
+                        raise RuntimeError(error_msg)
+                    
+                    # For CARD database, convert to coordinates (only critical database needs coordinates)
+                    if db_name == 'card':
+                        self.logger.info("Converting CARD results to coordinate format for protein extraction")
+                        
+                        for output_file in scan_results.output_files:
+                            genome_id = output_file.stem.replace(f'_{db_name}', '')
+                            out_csv = coords_dir / f"{genome_id}_coordinates.csv"
+                            
+                            try:
+                                rows = convert_abricate_to_coords(output_file, out_csv)
+                                if rows > 0:
+                                    if genome_id not in processed_accessions:
+                                        processed_accessions.append(genome_id)
+                                    coord_manifest[genome_id] = str(out_csv)
+                                    self.processing_status[genome_id] = 'rgi_analyzed'
+                                    self.accession_registry.setdefault(genome_id, {})['rgi_coordinates_found'] = rows
+                                    self.accession_registry[genome_id]['coordinate_file'] = str(out_csv)
+                                else:
+                                    # No coordinates but still processed
+                                    if genome_id not in processed_accessions:
+                                        processed_accessions.append(genome_id)
+                                    coord_manifest[genome_id] = str(out_csv)
+                                    self.processing_status[genome_id] = 'rgi_analyzed'
+                                    self.accession_registry.setdefault(genome_id, {})['rgi_coordinates_found'] = 0
+                                    self.accession_registry[genome_id]['coordinate_file'] = str(out_csv)
+                            except Exception as e:
+                                self.logger.warning(f"Coordinate conversion failed for {genome_id}: {e}")
+                                if genome_id not in failed_accessions:
+                                    failed_accessions.append(genome_id)
+                                self.processing_status[genome_id] = 'rgi_failed'
+                                self.failure_registry[genome_id] = f'CARD coordinate conversion failed: {str(e)}'
+                        
+                        # Update accession tracking with CARD-specific failures
+                        for genome_id, error in scan_results.failed_genomes.items():
+                            if genome_id not in failed_accessions:
+                                failed_accessions.append(genome_id)
+                            self.processing_status[genome_id] = 'rgi_failed'
+                            self.failure_registry[genome_id] = f'CARD scan failed: {error}'
+                    
+                except Exception as e:
+                    if is_critical:
+                        # Critical database failure - stop pipeline
+                        error_msg = f"CRITICAL: {description} scan failed: {str(e)}"
+                        self.logger.error(error_msg)
+                        raise RuntimeError(error_msg)
+                    else:
+                        # Secondary database failure - log warning and continue
+                        self.logger.warning(f"Secondary database {description} scan failed: {str(e)}")
+                        # Create empty scan results for failed secondary database
+                        self.database_results[db_name] = ScanResults(database=db_name)
+                        self.database_results[db_name].global_error = str(e)
             
-            successful_rgi = len(card_runner.processed_accessions)
-            self.logger.info(f"RGI analysis completed for {successful_rgi} accessions")
-            
+            successful_rgi = len(processed_accessions)
+            self.logger.info(f"Multi-database analysis completed for {successful_rgi} accessions")
+
+            # Write coordinate manifest for downstream reporting (only needed for CARD)
+            try:
+                import json as _json
+                coord_manifest_file = coords_dir / "coordinate_manifest.json"
+                with open(coord_manifest_file, 'w') as _f:
+                    _json.dump(coord_manifest, _f, indent=2)
+            except Exception as _e:
+                self.logger.warning(f"Failed to write coordinate manifest: {_e}")
+
             return {
-                'processed_accessions': card_runner.processed_accessions,
-                'failed_accessions': card_runner.failed_accessions,
-                'coordinate_cache': card_runner.coordinate_cache,
-                'stats': card_runner.stats
+                'processed_accessions': processed_accessions,
+                'failed_accessions': failed_accessions,
+                'database_results': self.database_results,
+                'coordinate_cache': coord_manifest,
+                'stats': {
+                    'total_databases_scanned': len(databases_to_scan),
+                    'coordinates_generated': len(coord_manifest),
+                }
             }
             
         except Exception as e:
-            self.logger.error(f"RGI analysis failed: {e}")
+            self.logger.error(f"Multi-database analysis failed: {e}")
             raise
     
     async def _execute_protein_extraction(self, target_genes: List[str]) -> Dict[str, Any]:
@@ -366,6 +482,34 @@ class ProductionPipelineOrchestrator:
                 json.dumps(pipeline_data, sort_keys=True).encode()
             ).hexdigest()
             
+            # Calculate database success rates
+            database_scan_results = {}
+            card_success_rate = 0.0
+            vfdb_success_rate = 0.0
+            plasmidfinder_success_rate = 0.0
+            
+            if hasattr(self, 'database_results'):
+                for db_name, scan_results in self.database_results.items():
+                    total = scan_results.total_genomes if scan_results.total_genomes > 0 else 1
+                    successful = len(scan_results.successful_scans)
+                    success_rate = successful / total
+                    
+                    database_scan_results[db_name] = {
+                        'total_genomes': scan_results.total_genomes,
+                        'successful_scans': successful,
+                        'failed_genomes': len(scan_results.failed_genomes),
+                        'no_hits': len(scan_results.no_hits_genomes),
+                        'success_rate': success_rate,
+                        'global_error': scan_results.global_error
+                    }
+                    
+                    if db_name == 'card':
+                        card_success_rate = success_rate
+                    elif db_name == 'vfdb':
+                        vfdb_success_rate = success_rate
+                    elif db_name == 'plasmidfinder':
+                        plasmidfinder_success_rate = success_rate
+            
             # Create master manifest
             manifest = PipelineManifest(
                 pipeline_version="2.0",
@@ -376,6 +520,10 @@ class ProductionPipelineOrchestrator:
                 total_genomes_downloaded=downloaded_count,
                 total_genomes_rgi_analyzed=rgi_count,
                 total_proteins_extracted=extraction_results['stats']['total_proteins_extracted'],
+                database_scan_results=database_scan_results,
+                card_success_rate=card_success_rate,
+                vfdb_success_rate=vfdb_success_rate,
+                plasmidfinder_success_rate=plasmidfinder_success_rate,
                 download_success_rate=download_rate,
                 rgi_success_rate=rgi_rate,
                 extraction_success_rate=extraction_rate,

@@ -1,12 +1,11 @@
-name: rgi_env
+name: abricate_env
 channels:
   - bioconda
   - conda-forge
   - defaults
 dependencies:
-  - python=3.9
-  - rgi=6.0.3
-  - card-model=3.2.3
+  - python=3.11
+  - abricate
   - biopython=1.81
   - pandas=2.0.3
   - numpy=1.24.3
