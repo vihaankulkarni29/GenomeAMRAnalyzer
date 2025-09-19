@@ -88,7 +88,7 @@ if docker-compose run --rm analyzer \
     --accessions "/app/data_input/$accession_file" \
     --genes "/app/data_input/$gene_file" \
     --email "$email" \
-    --output-dir "/app/data_output"; then
+    --output "/app/data_output"; then
     
     echo ""
     echo "🎉 Pipeline completed successfully!"

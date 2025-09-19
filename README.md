@@ -28,7 +28,7 @@ docker run --rm \
   vihaankulkarni29/genomeamranalyzer:latest \
   python /app/src/simplified_card_integrator.py \
   --accessions /app/input/accessions.txt \
-  --output-dir /app/output
+  --output /app/output
 ```
 
 **✅ Zero configuration required**  
@@ -48,7 +48,7 @@ docker run --rm \
   vihaankulkarni29/genomeamranalyzer:latest \
   python /app/src/simplified_card_integrator.py \
   --accessions /app/data/clinical_isolates.txt \
-  --output-dir /app/data/results
+  --output /app/data/results
 ```
 
 ### 🎓 **Students & Educators**
@@ -73,7 +73,7 @@ docker run --rm \
   vihaankulkarni29/genomeamranalyzer:latest \
   python /app/src/fasta_aa_extractor_integration.py \
   --input-dir /app/input \
-  --output-dir /app/output \
+  --output /app/output \
   --batch-mode
 ```
 
@@ -111,7 +111,7 @@ docker run --rm \
   python /app/src/fasta_aa_extractor_integration.py \
   --input-fasta /app/data/genomes.fasta \
   --genes /app/data/target_genes.txt \
-  --output-dir /app/data/extracted_proteins
+  --output /app/data/extracted_proteins
 ```
 
 **2. Co-occurrence Analysis**
@@ -132,7 +132,7 @@ docker run --rm \
   python /app/src/simplified_wildtype_aligner.py \
   --sequences /app/data/sequences.fasta \
   --reference /app/data/wildtype_reference.fasta \
-  --output-dir /app/data/alignments
+  --output /app/data/alignments
 ```
 
 ### Environment Variables
@@ -271,7 +271,7 @@ docker run --rm \
   python /app/src/simplified_card_integrator.py \
   --accessions /app/data/batch_1.txt \
   --batch-size 50 \
-  --output-dir /app/data/results_batch_1
+  --output /app/data/results_batch_1
 ```
 
 ### Getting Help

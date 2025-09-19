@@ -90,7 +90,7 @@ echo Output directory: data_output
 echo.
 
 REM Run the container with the user's inputs
-docker-compose run --rm analyzer --accessions "/app/data_input/%accession_file%" --genes "/app/data_input/%gene_file%" --email "%email%" --output-dir "/app/data_output"
+docker-compose run --rm analyzer --accessions "/app/data_input/%accession_file%" --genes "/app/data_input/%gene_file%" --email "%email%" --output "/app/data_output"
 
 if errorlevel 1 (
     echo.
