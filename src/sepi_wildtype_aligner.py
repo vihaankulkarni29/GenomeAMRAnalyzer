@@ -1,4 +1,3 @@
-from .configuration_manager import config_manager
 #!/usr/bin/env python3
 """
 SEPI-Enhanced WildTypeAligner - Intelligent reference acquisition and pairwise alignment
@@ -37,6 +36,16 @@ sepi_path = Path(__file__).parent.parent / "MetaDataHarvester" / "sepi2.0"
 sys.path.append(str(sepi_path))
 
 try:
+    from .configuration_manager import config_manager
+except ImportError:
+    # Fallback for development/testing
+    class MockConfigManager:
+        def get_default_genes(self, category="rnd_efflux_pumps", level="primary"):
+            return ["acrA", "acrB", "acrE"]
+    
+    config_manager = MockConfigManager()
+
+try:
     from Bio import SeqIO, Entrez
     from Bio.Seq import Seq
     from Bio.SeqRecord import SeqRecord
@@ -55,7 +64,15 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class SpeciesInfo:
-    """Information about detected species"""
+    """Information about detected species from sequence headers.
+    
+    Attributes:
+        genus (str): The genus name (e.g., 'Escherichia').
+        species (str): The species name (e.g., 'coli').
+        strain (str): The strain identifier, optional.
+        confidence (float): Confidence score for species detection (0.0-1.0).
+        method (str): Detection method used ('header_parsing', 'blast', etc.).
+    """
     genus: str
     species: str
     strain: str = ""
@@ -65,7 +82,17 @@ class SpeciesInfo:
 
 @dataclass
 class ReferenceProtein:
-    """Reference protein information"""
+    """Reference protein information retrieved from databases.
+    
+    Attributes:
+        protein_name (str): Name of the protein (e.g., 'acrA').
+        accession (str): Database accession number.
+        organism (str): Source organism scientific name.
+        sequence (str): Amino acid sequence.
+        source_strain (str): Strain from which protein was derived, optional.
+        assembly_level (str): Assembly quality level, optional.
+        ncbi_url (str): NCBI URL for the protein record, optional.
+    """
     protein_name: str
     accession: str
     organism: str
@@ -77,7 +104,22 @@ class ReferenceProtein:
 
 @dataclass
 class AlignmentResult:
-    """Pairwise alignment result"""
+    """Pairwise sequence alignment result with metrics.
+    
+    Attributes:
+        query_id (str): Identifier for the query sequence.
+        reference_id (str): Identifier for the reference sequence.
+        query_sequence (str): Query amino acid sequence.
+        reference_sequence (str): Reference amino acid sequence.
+        alignment_score (float): Numerical alignment score.
+        identity_percent (float): Percent identity (0.0-100.0).
+        similarity_percent (float): Percent similarity (0.0-100.0).
+        gaps (int): Number of gaps in the alignment.
+        alignment_length (int): Total length of the alignment.
+        query_coverage (float): Percentage of query covered (0.0-100.0).
+        reference_coverage (float): Percentage of reference covered (0.0-100.0).
+        alignment_file (str): Path to alignment output file, optional.
+    """
     query_id: str
     reference_id: str
     query_sequence: str
@@ -94,7 +136,22 @@ class AlignmentResult:
 
 @dataclass
 class WildTypeAlignerConfig:
-    """Configuration for SEPI-Enhanced WildTypeAligner"""
+    """Configuration for SEPI-Enhanced WildTypeAligner.
+    
+    Attributes:
+        input_dir (str): Directory containing input protein FASTA files.
+        output_dir (str): Directory for output alignment files.
+        email (str): Email address for NCBI API access.
+        sepi_path (str): Path to SEPI 2.0 installation directory.
+        target_genes (List[str]): List of target gene names to analyze.
+        reference_organism (Optional[str]): Preferred reference organism, optional.
+        assembly_level (str): Required assembly quality level.
+        max_references (int): Maximum number of references to fetch per gene.
+        use_water (bool): Whether to use EMBOSS WATER for alignment.
+        water_executable (str): Path or name of WATER executable.
+        gap_open (float): Gap opening penalty for alignment.
+        gap_extend (float): Gap extension penalty for alignment.
+    """
     input_dir: str
     output_dir: str
     email: str
@@ -110,12 +167,23 @@ class WildTypeAlignerConfig:
 
 
 class SEPIEnhancedWildTypeAligner:
-    """
-    SEPI-Enhanced WildTypeAligner with intelligent reference acquisition
+    """SEPI-Enhanced WildTypeAligner with intelligent reference acquisition.
+    
+    This class integrates SEPI 2.0 for automated reference protein acquisition
+    and performs pairwise alignment using EMBOSS WATER or BioPython pairwise2.
+    
+    Attributes:
+        config (WildTypeAlignerConfig): Configuration object containing all parameters.
+        species_cache (Dict[str, SpeciesInfo]): Cache for detected species information.
+        stats (Dict[str, int]): Statistics tracking processing progress.
     """
 
-    def __init__(self, config: WildTypeAlignerConfig):
-        """Initialize the SEPI-enhanced aligner"""
+    def __init__(self, config: WildTypeAlignerConfig) -> None:
+        """Initialize the SEPI-enhanced aligner.
+        
+        Args:
+            config (WildTypeAlignerConfig): Configuration object with all necessary parameters.
+        """
         self.config = config
         self.setup_logging()
         self.setup_directories()
@@ -124,10 +192,10 @@ class SEPIEnhancedWildTypeAligner:
         self.validate_dependencies()
         
         # Species detection cache
-        self.species_cache = {}
+        self.species_cache: Dict[str, SpeciesInfo] = {}
         
         # Statistics
-        self.stats = {
+        self.stats: Dict[str, int] = {
             'proteins_processed': 0,
             'species_detected': 0,
             'references_fetched': 0,
@@ -135,8 +203,12 @@ class SEPIEnhancedWildTypeAligner:
             'failed_alignments': 0
         }
 
-    def setup_logging(self):
-        """Setup logging configuration"""
+    def setup_logging(self) -> None:
+        """Setup logging configuration with file output.
+        
+        Creates a log directory and configures file-based logging for tracking
+        alignment operations and debugging information.
+        """
         log_dir = Path(self.config.output_dir) / "logs"
         log_dir.mkdir(parents=True, exist_ok=True)
 
@@ -303,6 +375,8 @@ class SEPIEnhancedWildTypeAligner:
         gene_groups = {}
         
         for seq_record in sequences:
+            if seq_record.id is None:
+                continue  # Skip sequences without IDs
             gene_name = self._extract_gene_name(seq_record.id)
             
             if gene_name not in gene_groups:
@@ -341,6 +415,8 @@ class SEPIEnhancedWildTypeAligner:
         # Method 1: Parse from sequence headers
         organisms = []
         for seq_record in sequences[:5]:  # Check first 5 sequences
+            if seq_record.id is None:
+                continue  # Skip sequences without IDs
             header_organism = self._parse_organism_from_header(seq_record.id)
             if header_organism:
                 organisms.append(header_organism)
@@ -564,7 +640,15 @@ class SEPIEnhancedWildTypeAligner:
             
             if result.returncode == 0:
                 # Parse WATER output
-                alignment_result = self._parse_water_output(alignment_file, query.id, reference.accession, str(query.seq), reference.sequence)
+                query_id = query.id or "unknown_query"
+                params = WaterOutputParams(
+                    alignment_file=alignment_file,
+                    query_id=query_id,
+                    ref_id=reference.accession,
+                    query_seq=str(query.seq),
+                    ref_seq=reference.sequence
+                )
+                alignment_result = self._parse_water_output(params)
                 self.stats['alignments_performed'] += 1
                 return alignment_result
             else:
@@ -581,14 +665,24 @@ class SEPIEnhancedWildTypeAligner:
             from Bio import pairwise2
             from Bio.pairwise2 import format_alignment
             
-            # Perform global alignment
-            alignments = pairwise2.align.globalxx(str(query.seq), reference.sequence)
+            # Perform global alignment - handle different BioPython versions
+            try:
+                alignments = pairwise2.align.globalxx(str(query.seq), reference.sequence)
+            except AttributeError:
+                # Fallback for newer BioPython versions
+                from Bio.Align import PairwiseAligner
+                aligner = PairwiseAligner()
+                aligner.match_score = 1
+                aligner.mismatch_score = 0
+                alignments = list(aligner.align(str(query.seq), reference.sequence))
             
             if alignments:
-                best_alignment = alignments[0]
-                
-                # Calculate statistics
-                aligned_query = best_alignment[0]
+                if hasattr(alignments[0], 'seqA'):  # Old pairwise2 format
+                    best_alignment = alignments[0]
+                    aligned_query = best_alignment[0]
+                else:  # New Align format
+                    best_alignment = alignments[0]
+                    aligned_query = str(best_alignment.aligned[0])
                 aligned_ref = best_alignment[1]
                 score = best_alignment[2]
                 
@@ -603,13 +697,14 @@ class SEPIEnhancedWildTypeAligner:
                 
                 # Save alignment to file
                 alignment_dir = Path(self.config.output_dir) / "alignments"
-                alignment_file = alignment_dir / f"{query.id}_vs_{reference.accession}.bio"
+                query_id = query.id or "unknown_query"
+                alignment_file = alignment_dir / f"{query_id}_vs_{reference.accession}.bio"
                 
                 with open(alignment_file, 'w') as f:
                     f.write(format_alignment(*best_alignment))
                 
                 alignment_result = AlignmentResult(
-                    query_id=query.id,
+                    query_id=query_id,
                     reference_id=reference.accession,
                     query_sequence=str(query.seq),
                     reference_sequence=reference.sequence,
@@ -633,11 +728,24 @@ class SEPIEnhancedWildTypeAligner:
         
         return None
 
-    def _parse_water_output(self, alignment_file: Path, query_id: str, ref_id: str, query_seq: str, ref_seq: str) -> AlignmentResult:
+@dataclass
+class WaterOutputParams:
+    """Parameters for parsing WATER alignment output"""
+    alignment_file: Path
+    query_id: str
+    ref_id: str
+    query_seq: str
+    ref_seq: str
+
+
+class SEPIEnhancedWildTypeAligner:
+    # ... (existing class continues)
+    
+    def _parse_water_output(self, params: WaterOutputParams) -> AlignmentResult:
         """Parse EMBOSS WATER output file"""
         # This is a simplified parser - could be enhanced for more detailed parsing
         try:
-            with open(alignment_file, 'r') as f:
+            with open(params.alignment_file, 'r') as f:
                 content = f.read()
             
             # Extract basic statistics (simplified)
@@ -649,7 +757,9 @@ class SEPIEnhancedWildTypeAligner:
             # Look for statistics in WATER output
             for line in content.split('\n'):
                 if 'Score:' in line:
-                    score = float(re.search(r'Score:\s*([\d.]+)', line).group(1))
+                    score_match = re.search(r'Score:\s*([\d.]+)', line)
+                    if score_match:
+                        score = float(score_match.group(1))
                 elif 'Identity:' in line:
                     match = re.search(r'Identity:\s*(\d+)/(\d+)\s*\(([\d.]+)%\)', line)
                     if match:
@@ -664,36 +774,36 @@ class SEPIEnhancedWildTypeAligner:
                         gaps = int(match.group(1))
             
             return AlignmentResult(
-                query_id=query_id,
-                reference_id=ref_id,
-                query_sequence=query_seq,
-                reference_sequence=ref_seq,
+                query_id=params.query_id,
+                reference_id=params.ref_id,
+                query_sequence=params.query_seq,
+                reference_sequence=params.ref_seq,
                 alignment_score=score,
                 identity_percent=identity,
                 similarity_percent=similarity,
                 gaps=gaps,
-                alignment_length=len(query_seq),  # Simplified
+                alignment_length=len(params.query_seq),  # Simplified
                 query_coverage=100.0,  # Simplified
                 reference_coverage=100.0,  # Simplified
-                alignment_file=str(alignment_file)
+                alignment_file=str(params.alignment_file)
             )
             
         except Exception as e:
             self.logger.error(f"Error parsing WATER output: {e}")
             # Return basic result
             return AlignmentResult(
-                query_id=query_id,
-                reference_id=ref_id,
-                query_sequence=query_seq,
-                reference_sequence=ref_seq,
+                query_id=params.query_id,
+                reference_id=params.ref_id,
+                query_sequence=params.query_seq,
+                reference_sequence=params.ref_seq,
                 alignment_score=0.0,
                 identity_percent=0.0,
                 similarity_percent=0.0,
                 gaps=0,
-                alignment_length=len(query_seq),
+                alignment_length=len(params.query_seq),
                 query_coverage=100.0,
                 reference_coverage=100.0,
-                alignment_file=str(alignment_file)
+                alignment_file=str(params.alignment_file)
             )
 
     def _generate_summary_reports(self, alignments: List[AlignmentResult]):

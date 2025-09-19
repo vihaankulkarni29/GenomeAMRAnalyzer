@@ -9,13 +9,12 @@ WORKDIR /app
 # Copy the entire project context into the container's working directory
 COPY . .
 
-# Configure Conda channels, create the environment, and install RGI
-# This is the key step to solve the installation failures.
+# Configure Conda channels, create the environment, and install Abricate (replaces RGI)
 RUN conda config --add channels defaults && \
     conda config --add channels bioconda && \
     conda config --add channels conda-forge && \
     conda config --set channel_priority strict && \
-    conda create -n GenomeAMRAnalyzer_env python=3.9 rgi -y && \
+    conda create -n GenomeAMRAnalyzer_env python=3.11 abricate -y && \
     conda clean -afy
 
 # Install Python packages from requirements.txt into the created Conda environment

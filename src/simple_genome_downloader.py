@@ -73,8 +73,15 @@ class SimpleGenomeDownloader:
             'failed_downloads': 0
         }
 
-    def setup_logging(self):
-        """Setup logging configuration"""
+    def setup_logging(self) -> None:
+        """Setup logging configuration with file and console output.
+        
+        Creates a log directory and configures file-based logging for tracking
+        genome download operations and errors.
+        
+        Returns:
+            None
+        """
         log_dir = Path(self.config.output_dir) / "logs"
         log_dir.mkdir(parents=True, exist_ok=True)
 
@@ -88,8 +95,15 @@ class SimpleGenomeDownloader:
         self.logger.addHandler(file_handler)
         self.logger.setLevel(logging.INFO)
 
-    def setup_ncbi(self):
-        """Setup NCBI Entrez configuration"""
+    def setup_ncbi(self) -> None:
+        """Setup NCBI Entrez configuration with authentication.
+        
+        Configures NCBI Entrez API with user email and optional API key
+        for rate limiting and authentication.
+        
+        Returns:
+            None
+        """
         Entrez.email = self.config.email
         if self.config.api_key:
             Entrez.api_key = self.config.api_key
@@ -97,8 +111,15 @@ class SimpleGenomeDownloader:
         else:
             self.logger.warning("No NCBI API key provided - using default rate limits")
 
-    def setup_directories(self):
-        """Create necessary output directories"""
+    def setup_directories(self) -> None:
+        """Create necessary output directories for genome data storage.
+        
+        Creates the main output directory and subdirectories for FASTA files
+        and GFF annotation files. Logs the absolute paths for debugging.
+        
+        Returns:
+            None
+        """
         output_path = Path(self.config.output_dir)
         fasta_path = output_path / "fasta"
         gff_path = output_path / "gff"
@@ -143,7 +164,17 @@ class SimpleGenomeDownloader:
             return False
 
     def parse_accession_file(self) -> List[str]:
-        """Parse accession file to get protein IDs"""
+        """Parse accession file to extract valid protein IDs.
+        
+        Reads the accession file line by line, validates each protein ID,
+        removes duplicates, and returns a list of valid protein accessions.
+        
+        Returns:
+            List[str]: List of valid protein accession IDs, limited by batch_size.
+        
+        Raises:
+            FileNotFoundError: If the specified accession file doesn't exist.
+        """
         self.logger.info(f"Parsing accession file: {self.config.accession_file}")
 
         if not os.path.exists(self.config.accession_file):
@@ -174,15 +205,38 @@ class SimpleGenomeDownloader:
         return protein_ids
 
     def _is_valid_protein_id(self, protein_id: str) -> bool:
-        """Validate protein ID format"""
+        """Validate protein ID format according to NCBI standards.
+        
+        Checks if the provided protein ID follows standard accession formats:
+        - Length between 3-20 characters
+        - Contains only alphanumeric characters, dots, and underscores
+        - Not empty or None
+        
+        Args:
+            protein_id (str): The protein accession ID to validate.
+        
+        Returns:
+            bool: True if the protein ID is valid, False otherwise.
+        """
         if not protein_id or not isinstance(protein_id, str):
             return False
         
         protein_id = protein_id.strip()
         return 3 <= len(protein_id) <= 20 and protein_id.replace('_', '').replace('.', '').isalnum()
 
-    def download_genomes_batch(self, protein_ids: List[str]) -> List[Dict]:
-        """Download genome sequences for a batch of protein IDs"""
+    def download_genomes_batch(self, protein_ids: List[str]) -> List[Dict[str, str]]:
+        """Download genome sequences for a batch of protein IDs.
+        
+        Processes each protein ID to download associated genome data.
+        In this simplified version, creates mock genome files for testing.
+        
+        Args:
+            protein_ids (List[str]): List of protein accession IDs to process.
+        
+        Returns:
+            List[Dict[str, str]]: List of genome metadata dictionaries containing
+                protein_id, genome_file, and download status information.
+        """
         if not protein_ids:
             return []
 

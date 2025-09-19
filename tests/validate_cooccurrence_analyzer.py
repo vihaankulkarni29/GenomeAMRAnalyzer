@@ -1,4 +1,3 @@
-import sys; import os; sys.path.append(os.path.join(os.path.dirname(__file__), '\\\src')); from configuration_manager import config_manager
 #!/usr/bin/env python3
 """
 Simple validation test for Generic Co-occurrence Analyzer
@@ -15,6 +14,20 @@ import json
 from pathlib import Path
 from collections import defaultdict, Counter
 from itertools import combinations
+
+# Add src directory to path
+src_path = os.path.join(os.path.dirname(__file__), '..', 'src')
+sys.path.insert(0, src_path)
+
+try:
+    from configuration_manager import config_manager
+except ImportError:
+    # Fallback configuration for testing
+    class MockConfigManager:
+        def get_default_genes(self, category="rnd_efflux_pumps", level="primary"):
+            return ["acrA", "acrB", "acrE"]
+    
+    config_manager = MockConfigManager()
 
 # Test data structure to simulate pandas DataFrame
 class SimpleDataFrame:

@@ -43,9 +43,22 @@ class ConfigurationManager:
         except FileNotFoundError:
             # Return minimal default configuration
             return {
-                "default_genes": {"rnd_efflux_pumps": {"primary": config_manager.get_default_genes("rnd_efflux_pumps", "primary")}},
-                "reference_strains": {"primary": {"id": config_manager.get_reference_strain("primary")["id"], "species": "Escherichia coli"}},
-                "analysis_parameters": {"sequence_processing": {"max_length": 50000}}
+                "default_genes": {
+                    "rnd_efflux_pumps": {
+                        "primary": ["acrA", "acrB", "acrE"]
+                    }
+                },
+                "reference_strains": {
+                    "primary": {
+                        "id": "MG1655", 
+                        "species": "Escherichia coli"
+                    }
+                },
+                "analysis_parameters": {
+                    "sequence_processing": {
+                        "max_length": 50000
+                    }
+                }
             }
     
     def get_default_genes(self, category: str = "rnd_efflux_pumps", level: str = "primary") -> List[str]:
@@ -74,15 +87,15 @@ def get_config() -> ConfigurationManager:
     """Get global configuration manager instance"""
     return config_manager
 
-def replace_hardcoded_genes(default_replacement: List[str] = None) -> List[str]:
+def replace_hardcoded_genes(default_replacement: Optional[List[str]] = None) -> List[str]:
     """Replace hardcoded gene references with configuration"""
     if default_replacement:
         return default_replacement
     return config_manager.get_default_genes()
 
-def replace_hardcoded_strain(default_replacement: str = None) -> str:
+def replace_hardcoded_strain(default_replacement: Optional[str] = None) -> str:
     """Replace hardcoded strain references with configuration"""
     if default_replacement:
         return default_replacement
     strain_info = config_manager.get_reference_strain()
-    return strain_info.get("id", config_manager.get_reference_strain("primary")["id"])
+    return strain_info.get("id", "MG1655")

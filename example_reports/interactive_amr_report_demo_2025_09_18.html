@@ -1,0 +1,327 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AMR Genomics Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        h1, h2 { color: #2c3e50; }
+        .artifact-link { font-size: 0.9em; color: #2980b9; text-decoration: none; }
+        .artifact-link:hover { text-decoration: underline; }
+        .section { margin-bottom: 2em; }
+        .table-responsive { overflow-x: auto; }
+        @media (max-width: 768px) {
+            body { margin: 1em; }
+            table { font-size: 0.9em; }
+        }
+    </style>
+</head>
+<body>
+    <h1>AMR Genomics Analysis Report</h1>
+    <p>Run ID: demo_2025_09_18</p>
+    <div class="section">
+        <h2>Genome Summary</h2>
+        <div class="table-responsive">
+        <table id="genomeTable" class="display">
+            <thead>
+                <tr>
+                    <th>Accession</th>
+                    <th>Organism</th>
+                    <th>Strain</th>
+                    <th>BioSample</th>
+                    <th>BioProject</th>
+                    <th>Download Date</th>
+                    <th>Artifact</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                <tr>
+                    <td>GCF_000005825.2</td>
+                    <td>Escherichia coli K-12</td>
+                    <td>MG1655</td>
+                    <td>SAMN02604091</td>
+                    <td>PRJNA225</td>
+                    <td>2025-09-18</td>
+                    <td></td>
+                </tr>
+                
+                <tr>
+                    <td>GCF_000008865.2</td>
+                    <td>Escherichia coli O157:H7</td>
+                    <td>EDL933</td>
+                    <td>SAMN02603478</td>
+                    <td>PRJNA224</td>
+                    <td>2025-09-18</td>
+                    <td></td>
+                </tr>
+                
+            </tbody>
+        </table>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Mutations</h2>
+        <div class="table-responsive">
+        <table id="mutationTable" class="display">
+            <thead>
+                <tr>
+                    <th>Mutation ID</th>
+                    <th>Accession</th>
+                    <th>Gene</th>
+                    <th>Type</th>
+                    <th>Position</th>
+                    <th>Ref Base</th>
+                    <th>Mut Base</th>
+                    <th>Confidence</th>
+                    <th>AMR Known</th>
+                    <th>Artifact</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>83</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>80</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>83</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>87</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>45</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>45</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                
+            </tbody>
+        </table>
+        </div>
+    </div>
+    <div class="section">
+        <h2>MIC Data</h2>
+        <div class="table-responsive">
+        <table id="micTable" class="display">
+            <thead>
+                <tr>
+                    <th>Accession</th>
+                    <th>Antibiotic</th>
+                    <th>MIC Value</th>
+                    <th>Unit</th>
+                    <th>Resistance</th>
+                    <th>Quality</th>
+                    <th>Artifact</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                <tr>
+                    <td>GCF_000005825.2</td>
+                    <td>Ciprofloxacin</td>
+                    <td>2.0</td>
+                    <td>μg/mL</td>
+                    <td>Intermediate</td>
+                    <td>0.95</td>
+                    <td></td>
+                </tr>
+                
+            </tbody>
+        </table>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Mutation Co-occurrence</h2>
+        <div class="table-responsive">
+        <table id="cooccurrenceTable" class="display">
+            <thead>
+                <tr>
+                    <th>Mutation A</th>
+                    <th>Mutation B</th>
+                    <th>Count A</th>
+                    <th>Count B</th>
+                    <th>Count Both</th>
+                    <th>P-value</th>
+                    <th>Odds Ratio</th>
+                    <th>Significant</th>
+                    <th>Artifact</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                <tr>
+                    <td>gyrA_S83L</td>
+                    <td>parC_S80I</td>
+                    <td>15</td>
+                    <td>12</td>
+                    <td>8</td>
+                    <td>0.001</td>
+                    <td>3.5</td>
+                    <td>True</td>
+                    <td></td>
+                </tr>
+                
+            </tbody>
+        </table>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Mutation Frequency Analysis</h2>
+        <div id="mutationFrequencyChart" style="width:100%;height:500px;"></div>
+    </div>
+    <div class="section">
+        <h2>Pipeline Statistics</h2>
+        <pre>{
+  "analysis_time": "2025-09-18 19:45:00",
+  "total_genomes": 2,
+  "total_mutations": 6,
+  "unique_mutations": 4
+}</pre>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#genomeTable').DataTable({
+                "pageLength": 25,
+                "responsive": true
+            });
+            $('#mutationTable').DataTable({
+                "pageLength": 25,
+                "responsive": true
+            });
+            $('#micTable').DataTable({
+                "pageLength": 25,
+                "responsive": true
+            });
+            $('#cooccurrenceTable').DataTable({
+                "pageLength": 25,
+                "responsive": true
+            });
+        });
+    </script>
+    <script>
+        
+            var mutations = ["S83L", "A45V", "S80I", "D87N"];
+            var frequencies = [2, 2, 1, 1];
+            
+            var data = [{
+                x: mutations,
+                y: frequencies,
+                type: 'bar',
+                marker: {
+                    color: frequencies.map(function(val, idx) {
+                        var colors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#34495e'];
+                        return colors[idx % colors.length];
+                    }),
+                    opacity: 0.8
+                },
+                text: frequencies.map(function(val) { return val.toString(); }),
+                textposition: 'auto',
+                hovertemplate: '<b>Mutation:</b> %{x}<br><b>Frequency:</b> %{y}<br><extra></extra>'
+            }];
+            
+            var layout = {
+                title: {
+                    text: 'Top Mutation Frequencies Across Analyzed Genomes',
+                    font: { size: 18, color: '#2c3e50' }
+                },
+                xaxis: {
+                    title: 'Mutation',
+                    tickangle: -45,
+                    automargin: true
+                },
+                yaxis: {
+                    title: 'Frequency Count',
+                    gridcolor: '#ecf0f1'
+                },
+                margin: {
+                    l: 60,
+                    r: 40,
+                    t: 80,
+                    b: 120
+                },
+                plot_bgcolor: '#ffffff',
+                paper_bgcolor: '#ffffff',
+                showlegend: false
+            };
+            
+            var config = {
+                responsive: true,
+                displayModeBar: true,
+                modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d'],
+                displaylogo: false
+            };
+            
+            Plotly.newPlot('mutationFrequencyChart', data, layout, config);
+            
+    </script>
+</body>
+</html>

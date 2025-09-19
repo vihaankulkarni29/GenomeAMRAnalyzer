@@ -135,16 +135,24 @@ class GenericCoOccurrenceAnalyzer:
                  min_genomes: int = 2,
                  max_combination_size: int = 5,
                  significance_threshold: float = 0.05,
-                 log_level: str = "INFO"):
-        """
-        Initialize the co-occurrence analyzer
+                 log_level: str = "INFO") -> None:
+        """Initialize the co-occurrence analyzer with comprehensive configuration.
         
         Args:
-            output_dir: Directory for output files
-            min_genomes: Minimum genomes required for a pattern to be reported
-            max_combination_size: Maximum number of genes to analyze together
-            significance_threshold: P-value threshold for statistical significance
-            log_level: Logging level (DEBUG, INFO, WARNING, ERROR)
+            output_dir (str, optional): Directory path for output files and logs. 
+                Defaults to "cooccurrence_results".
+            min_genomes (int, optional): Minimum number of genomes required for a pattern 
+                to be reported as significant. Defaults to 2.
+            max_combination_size (int, optional): Maximum number of genes to analyze 
+                together in combination patterns. Defaults to 5.
+            significance_threshold (float, optional): P-value threshold for statistical 
+                significance testing using hypergeometric distribution. Defaults to 0.05.
+            log_level (str, optional): Logging verbosity level ('DEBUG', 'INFO', 
+                'WARNING', 'ERROR'). Defaults to "INFO".
+                
+        Raises:
+            ValueError: If min_genomes < 1 or max_combination_size < 2.
+            OSError: If output directory cannot be created.
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -162,7 +170,7 @@ class GenericCoOccurrenceAnalyzer:
         self._setup_logging(log_level)
         
         # Statistics tracking
-        self.stats = {
+        self.stats: Dict[str, int] = {
             'total_mutations': 0,
             'total_genomes': 0,
             'total_genes': 0,
@@ -171,7 +179,18 @@ class GenericCoOccurrenceAnalyzer:
         }
     
     def _setup_logging(self, log_level: str) -> None:
-        """Setup comprehensive logging with Windows-safe file handling"""
+        """Setup comprehensive logging with Windows-safe file handling.
+        
+        Creates a logging configuration that handles file operations safely on Windows
+        systems and provides appropriate console and file output for debugging.
+        
+        Args:
+            log_level (str): Logging level name ('DEBUG', 'INFO', 'WARNING', 'ERROR').
+            
+        Note:
+            Avoids file handler creation in temporary directories to prevent Windows
+            file locking issues during test cleanup.
+        """
         log_file = self.output_dir / "cooccurrence_analysis.log"
 
         # Create formatter

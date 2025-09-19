@@ -57,10 +57,32 @@ class ScanResults:
 
 
 def is_fasta(path: Path) -> bool:
+    """Check if a file is a valid FASTA file with appropriate extension.
+    
+    Validates that the path points to an existing file with a FASTA extension.
+    
+    Args:
+        path (Path): File path to check.
+    
+    Returns:
+        bool: True if the file exists and has a FASTA extension, False otherwise.
+    """
     return path.is_file() and path.suffix.lower() in FASTA_EXTENSIONS
 
 
 def find_fastas(input_dir: Path) -> List[Path]:
+    """Recursively find all FASTA files in a directory and its subdirectories.
+    
+    Searches for files with common FASTA extensions (.fasta, .fas, .fa, .fna, .ffn)
+    in the specified directory tree.
+    
+    Args:
+        input_dir (Path): Root directory to search for FASTA files.
+    
+    Returns:
+        List[Path]: List of Path objects pointing to discovered FASTA files,
+            sorted alphabetically for reproducible processing order.
+    """
     files: List[Path] = []
     for entry in sorted(input_dir.iterdir()):
         if is_fasta(entry):
@@ -69,28 +91,26 @@ def find_fastas(input_dir: Path) -> List[Path]:
 
 
 def run_abricate_on_file(fasta_path: Path, db: str = "card", nopath: bool = True) -> str:
-    """Run abricate on a single fasta and return captured stdout (TSV string).
+    """Run abricate antimicrobial resistance screening on a single FASTA file.
     
-    Enhanced with better error handling and logging.
+    Executes the abricate command-line tool to identify antimicrobial resistance 
+    genes, virulence factors, or plasmid genes in bacterial genome assemblies.
+    
+    Args:
+        fasta_path (Path): Path to the input bacterial genome FASTA file.
+        db (str, optional): Abricate database name to use for screening. 
+            Options include 'card', 'vfdb', 'plasmidfinder', 'resfinder', etc. 
+            Defaults to "card".
+        nopath (bool, optional): Whether to use --nopath flag to exclude 
+            directory paths from output for cleaner results. Defaults to True.
 
-    Parameters
-    ----------
-    fasta_path: Path
-        Path to the input genome FASTA file.
-    db: str
-        Abricate database name (card, vfdb, plasmidfinder, etc.)
-    nopath: bool
-        Whether to use --nopath flag to strip directory paths from output.
-
-    Returns
-    -------
-    str
-        Raw TSV output from abricate, or empty string on failure.
+    Returns:
+        str: Raw TSV-formatted output from abricate containing gene matches,
+            coordinates, and resistance information. Returns empty string on failure.
         
-    Raises
-    ------
-    RuntimeError
-        If abricate executable is not found on PATH.
+    Raises:
+        RuntimeError: If abricate executable is not found on system PATH.
+        subprocess.SubprocessError: If abricate command execution fails.
     """
     cmd = ["abricate", "--db", db]
     if nopath:

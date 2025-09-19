@@ -36,6 +36,17 @@ class DownloadResult:
     file_checksum: Optional[str] = None
 
 
+@dataclass
+class GenomeDownloaderConfig:
+    """Configuration settings for GenomeDownloader"""
+    output_dir: str
+    email: str
+    api_key: Optional[str] = None
+    max_concurrent: int = 3
+    retry_attempts: int = 3
+    timeout_seconds: int = 300
+
+
 class GenomeDownloader:
     """
     Professional genome downloader with:
@@ -46,20 +57,15 @@ class GenomeDownloader:
     """
     
     def __init__(self,
-                 output_dir: str,
-                 email: str,
-                 api_key: Optional[str] = None,
-                 max_concurrent: int = 3,
-                 retry_attempts: int = 3,
-                 timeout_seconds: int = 300,
+                 config: GenomeDownloaderConfig,
                  logger: Optional[logging.Logger] = None):
         
-        self.output_dir = Path(output_dir)
-        self.email = email
-        self.api_key = api_key
-        self.max_concurrent = max_concurrent
-        self.retry_attempts = retry_attempts
-        self.timeout_seconds = timeout_seconds
+        self.output_dir = Path(config.output_dir)
+        self.email = config.email
+        self.api_key = config.api_key
+        self.max_concurrent = config.max_concurrent
+        self.retry_attempts = config.retry_attempts
+        self.timeout_seconds = config.timeout_seconds
         self.logger = logger or self._setup_logger()
         
         # Create output directory
@@ -488,14 +494,17 @@ async def test_download_engine():
         GenomeMetadata(accession="CP081855.1", organism="Escherichia coli", length=5098066)
     ]
     
-    # Create downloader
-    downloader = GenomeDownloader(
+    # Create configuration
+    config = GenomeDownloaderConfig(
         output_dir="test_genomes",
         email="vihaankulkarni29@gmail.com",
         api_key="ef7622c2e716fa317fe04d24c42904211107",
         max_concurrent=2,
         retry_attempts=2
     )
+    
+    # Create downloader
+    downloader = GenomeDownloader(config)
     
     try:
         # Download genomes

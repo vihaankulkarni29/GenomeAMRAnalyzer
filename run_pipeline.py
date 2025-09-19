@@ -3,8 +3,24 @@
 GenomeAMRAnalyzer Orchestrator
 Runs the full pipeline end-to-end using existing modules and config:
 1) URL/Accession resolution and genome download
-2) CARDRunner (RGI) to produce coordinates
-3) FastaAAExtractor to generate protein FASTAs
+2) CARDRunner (RGI) to produce coord        # Resolve URL to accessions
+        ncbi_cfg = cfg.get("ncbi", {})
+        email = args.email or ncbi_cfg.get("email", "")
+        api_key = ncbi_cfg.get("api_key") or None
+        max_genomes = ncbi_cfg.get("max_genomes", 50)
+        
+        if not email or email.startswith("your.email"):
+            print("Error: Provide --email or set ncbi.email in config before using --url")
+            print("Example: --email your.name@institution.edu")
+            return 1
+        
+        try:
+            accessions = resolve_accessions_from_url(args.url, email, api_key, max_genomes)
+            if not accessions:
+                print("No accessions found for URL")
+                return 1
+            
+            accessions_file = pipeline_dirs.temp_dir / "url_accessions.txt"Extractor to generate protein FASTAs
 4) SimplifiedWildTypeAligner (optional)
 5) ProductionSubScanAnalyzer (optional)
 6) ProductionCooccurrenceAnalyzer (optional)
@@ -20,6 +36,7 @@ import time
 from pathlib import Path
 from shutil import which
 from typing import List, Optional
+from dataclasses import dataclass
 
 # Import NCBI URL utility if available
 try:
@@ -28,6 +45,45 @@ try:
 except ImportError:
     NCBI_URL_AVAILABLE = False
     url_to_accessions = None
+
+
+@dataclass
+class PipelineDirectories:
+    """Directory configuration for pipeline"""
+    genomes_dir: Path
+    card_dir: Path
+    proteins_dir: Path
+    align_dir: Path
+    results_dir: Path
+    reports_dir: Path
+    temp_dir: Path
+
+    @classmethod
+    def from_config(cls, project: Path, dirs_config: dict):
+        """Create directories from configuration"""
+        return cls(
+            genomes_dir=project / dirs_config.get("genomes", "genome_data/fasta"),
+            card_dir=project / dirs_config.get("card_results", "card_results"),
+            proteins_dir=project / dirs_config.get("proteins", "proteins"),
+            align_dir=project / dirs_config.get("alignments", "alignments"),
+            results_dir=project / dirs_config.get("results", "results"),
+            reports_dir=project / dirs_config.get("reports", "reports"),
+            temp_dir=project / dirs_config.get("temp", "temp")
+        )
+
+    def create_all(self):
+        """Create all directories"""
+        for directory in [self.genomes_dir, self.card_dir, self.proteins_dir, 
+                         self.align_dir, self.results_dir, self.reports_dir, self.temp_dir]:
+            directory.mkdir(parents=True, exist_ok=True)
+
+
+@dataclass
+class NCBIConfig:
+    """NCBI configuration for URL resolution"""
+    email: str
+    api_key: Optional[str] = None
+    max_genomes: int = 50
 
 
 def load_genes_from_file(genes_file: Path) -> List[str]:
@@ -168,16 +224,8 @@ def main() -> int:
 
     # Setup directories
     dirs = cfg.get("directories", {})
-    genomes_dir = project / dirs.get("genomes", "genome_data/fasta")
-    card_dir = project / dirs.get("card_results", "card_results")
-    proteins_dir = project / dirs.get("proteins", "proteins")
-    align_dir = project / dirs.get("alignments", "alignments")
-    results_dir = project / dirs.get("results", "results")
-    reports_dir = project / dirs.get("reports", "reports")
-    temp_dir = project / dirs.get("temp", "temp")
-
-    for directory in [genomes_dir, card_dir, proteins_dir, align_dir, results_dir, reports_dir, temp_dir]:
-        directory.mkdir(parents=True, exist_ok=True)
+    pipeline_dirs = PipelineDirectories.from_config(project, dirs)
+    pipeline_dirs.create_all()
 
     # Resolve accessions
     accessions_file = None

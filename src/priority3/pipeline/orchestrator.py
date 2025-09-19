@@ -96,7 +96,7 @@ class PipelineOrchestrator:
         stages = [
             ('genome_harvest', self.run_genome_harvest),
             ('mic_harvest', self.run_mic_harvest),
-            ('card_rgi', self.run_card_rgi),
+            ('card_abricate', self.run_card_abricate),
             ('fasta_aa_extractor', self.run_fasta_aa_extractor),
             ('wildtype_aligner', self.run_wildtype_aligner),
             ('subscan', self.run_subscan),
@@ -151,39 +151,42 @@ class PipelineOrchestrator:
         self.pipeline_errors = pipeline_errors
         self.successful_stages = successful_stages
 
-    def run_card_rgi(self):
-        """Run CARD RGI with graceful error handling and per-genome processing."""
-        from src.priority3.card.rgi_runner import CARDRGIRunner
+    def run_card_abricate(self):
+        """Run CARD analysis via Abricate with graceful error handling."""
+        from src.abricate_runner import run_abricate_on_file
+        from src.abricate_to_coords import convert_abricate_to_coords
+        from pathlib import Path
         
         db_path = self.config['database']['path']
         output_dir = self.config.get('card_output_dir', 'card_results')
-        card_db = self.config.get('card_db')
-        rgi_path = self.config.get('rgi_path', 'rgi')
+        abricate_dir = self.config.get('abricate_output_dir', 'abricate_results')
         
         repo = GenomeRepository(db_path)
         genome_records = repo.list_genomes(status='downloaded')
         
         if not genome_records:
-            self.logger.warning("No downloaded genomes found for CARD RGI processing")
+            self.logger.warning("No downloaded genomes found for Abricate processing")
             return
             
         fasta_files = [g.file_path for g in genome_records if g.file_path and os.path.exists(g.file_path)]
         sample_ids = [g.accession for g in genome_records if g.file_path and os.path.exists(g.file_path)]
         
         if not fasta_files:
-            self.logger.warning("No valid FASTA files found for CARD RGI processing")
+            self.logger.warning("No valid FASTA files found for Abricate processing")
             return
-            
-        # Check if RGI is available
+        
+        # Check if Abricate is available
         import shutil
-        if not shutil.which(rgi_path):
-            self.logger.error(f"RGI binary not found: {rgi_path}")
-            self.logger.error("Please install RGI: conda install -c bioconda rgi")
-            self.logger.warning("Skipping CARD RGI stage - continuing with remaining pipeline stages")
+        if not shutil.which('abricate'):
+            self.logger.error("Abricate binary not found in PATH")
+            self.logger.error("Please install Abricate: conda install -c bioconda abricate")
+            self.logger.warning("Skipping CARD Abricate stage - continuing with remaining pipeline stages")
             return
             
         try:
-            runner = CARDRGIRunner(rgi_path=rgi_path, card_db=card_db, output_dir=output_dir)
+            # Create output directories
+            os.makedirs(abricate_dir, exist_ok=True)
+            os.makedirs(output_dir, exist_ok=True)
             
             # Process genomes individually for better error handling
             successful_runs = []
@@ -191,23 +194,36 @@ class PipelineOrchestrator:
             
             for fasta_file, sample_id in zip(fasta_files, sample_ids):
                 try:
-                    self.logger.info(f"Running RGI on {sample_id}")
-                    runner.run_batch([fasta_file], [sample_id], output_format="txt")
+                    self.logger.info(f"Running Abricate on {sample_id}")
+                    
+                    # Step 1: Run Abricate and write to file
+                    abricate_content = run_abricate_on_file(Path(fasta_file), db='card')
+                    if abricate_content.strip():
+                        abricate_file = os.path.join(abricate_dir, f"{sample_id}_abricate.tsv")
+                        with open(abricate_file, 'w') as f:
+                            f.write(abricate_content)
+                        
+                        # Step 2: Convert to coordinates CSV
+                        coords_file = os.path.join(output_dir, f"{sample_id}_coordinates.csv")
+                        convert_abricate_to_coords(abricate_file, coords_file)
+                    else:
+                        self.logger.info(f"No Abricate hits for {sample_id}")
+                    
                     successful_runs.append(sample_id)
                 except Exception as e:
-                    self.logger.error(f"RGI failed for {sample_id}: {e}")
+                    self.logger.error(f"Abricate failed for {sample_id}: {e}")
                     failed_runs.append((sample_id, str(e)))
                     
-            self.logger.info(f"CARD RGI completed: {len(successful_runs)} successful, {len(failed_runs)} failed")
+            self.logger.info(f"CARD Abricate completed: {len(successful_runs)} successful, {len(failed_runs)} failed")
             
             if failed_runs:
-                self.logger.warning("RGI failures:")
+                self.logger.warning("Abricate failures:")
                 for sample_id, error in failed_runs:
                     self.logger.warning(f"  - {sample_id}: {error}")
                     
         except Exception as e:
-            self.logger.error(f"CARD RGI runner initialization failed: {e}")
-            self.logger.warning("Continuing pipeline without CARD RGI results")
+            self.logger.error(f"Abricate runner initialization failed: {e}")
+            self.logger.warning("Continuing pipeline without CARD Abricate results")
 
     def run_fasta_aa_extractor(self):
         """Run protein extraction with per-genome error handling and validation."""

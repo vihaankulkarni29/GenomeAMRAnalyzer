@@ -65,39 +65,33 @@ rule harvest_genomes:
     script:
         "scripts/genome_harvester.py"
 
-# Rule 3: CARD RGI Analysis
-rule run_rgi:
+# Rule 3: Abricate Analysis (replaces RGI)
+rule run_abricate:
     input:
         genome="genomes/{accession}.fasta"
     output:
-        rgi_txt="card_results/{accession}_rgi.txt",
-        rgi_json="card_results/{accession}_rgi.json"
+        abricate_tsv="abricate_results/{accession}_abricate.tsv",
+        coords_csv="card_results/{accession}_coordinates.csv"
     params:
-        card_db=config["card_database"]
+        card_db="card"
     conda:
-        "envs/rgi.yaml"
+        "envs/abricate.yaml"
     log:
-        "logs/rgi_{accession}.log"
+        "logs/abricate_{accession}.log"
     shell:
         """
-        rgi main --input_sequence {input.genome} \
-                 --output_file card_results/{wildcards.accession}_rgi \
-                 --input_type contig \
-                 --local \
-                 --card_json {params.card_db} \
-                 --output_format txt 2> {log}
+        # Run Abricate with CARD database
+        abricate --db {params.card_db} --nopath {input.genome} > {output.abricate_tsv} 2> {log}
         
-        rgi main --input_sequence {input.genome} \
-                 --output_file card_results/{wildcards.accession}_rgi \
-                 --input_type contig \
-                 --local \
-                 --card_json {params.card_db} \
-                 --output_format json 2>> {log}
+        # Convert to coordinate CSV format
+        python -m src.abricate_to_coords --in-tsv {output.abricate_tsv} --out-csv {output.coords_csv} 2>> {log}
         """
 
 # Rule 4: Protein Extraction
 rule extract_proteins:
     input:
+        genome="genomes/{accession}.fasta",
+        coords="card_results/{accession}_coordinates.csv"
         genome="genomes/{accession}.fasta",
         rgi_txt="card_results/{accession}_rgi.txt",
         gene_list="gene_list.txt"

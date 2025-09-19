@@ -1,0 +1,2 @@
+contig_id	start	end	strand	gene_name	cut_off	best_hit_aro
+contigA	100	200	+	vfgA	99	ARO:1234
