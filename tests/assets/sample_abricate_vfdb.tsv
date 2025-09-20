@@ -1,2 +1,6 @@
-contig_id	start	end	strand	gene_name	cut_off	best_hit_aro
-contigA	100	200	+	vfgA	99	ARO:1234
+FILE	SEQUENCE	START	END	STRAND	GENE	COVERAGE	COVERAGE_MAP	GAPS	%COVERAGE	%IDENTITY	DATABASE	ACCESSION	PRODUCT	RESISTANCE
+E_coli_K12.fasta	NC_000913.3	100	1200	+	acrA	100	1-1100/1100	0/0	100.00	98.20	card	ARO:3000513	acriflavine resistance protein AcrA	acriflavine
+E_coli_K12.fasta	NC_000913.3	1300	2400	+	acrB	100	1-1100/1100	0/0	100.00	97.85	card	ARO:3000514	acriflavine resistance protein AcrB	acriflavine
+E_coli_K12.fasta	NC_000913.3	2500	3200	+	tolC	100	1-700/700	0/0	100.00	99.14	card	ARO:3000515	outer membrane channel protein TolC	acriflavine
+E_coli_K12.fasta	plasmid_1	500	1200	-	blaOXA-48	95	50-750/750	1/0	93.33	96.50	card	ARO:3000692	beta-lactamase OXA-48	beta-lactam
+E_coli_K12.fasta	contig_2	1000	1800	+	qnrS1	100	1-800/800	0/0	100.00	99.75	card	ARO:3000673	quinolone resistance protein QnrS1	quinolone

@@ -72,7 +72,22 @@ def _read_abricate_tsv(tsv_path: Path) -> pd.DataFrame:
 
     # Normalize columns: upper-case, strip spaces, map known aliases
     col_map = {c: c.strip().upper() for c in df.columns}
-    df.columns = [col_map[c] for c in df.columns]
+    
+    # Map Abricate column aliases to expected names
+    alias_map = {
+        "%COVERAGE": "PERCENT_COVERAGE",
+        "%IDENTITY": "PERCENT_IDENTITY"
+    }
+    
+    # Apply alias mapping
+    normalized_cols = []
+    for c in df.columns:
+        normalized = col_map[c]
+        if normalized in alias_map:
+            normalized = alias_map[normalized]
+        normalized_cols.append(normalized)
+    
+    df.columns = normalized_cols
 
     # Ensure required columns exist (fill if missing)
     for req in ABR_COLS:
